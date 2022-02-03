@@ -8,7 +8,7 @@ from configparser import ConfigParser
 
 class Settings:
     def __init__(self, check=False):
-        self.ini_path = os.path.join(get_settings_path(), 'ransack_settings.ini')
+        self.ini_path = os.path.join(get_settings_path(), 'rsack_settings.ini')
         if check:
             logger.debug('Removing settings.ini')
             os.remove(self.ini_path)
