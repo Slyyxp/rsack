@@ -12,6 +12,6 @@ setup(
     install_requires=["requests==2.25.1", "mutagen==1.45.1", "loguru==0.5.3"],
     entry_points={
                 'console_scripts': [
-                    'rsack = r.main:main'
+                    'rsack = rsack.main:main'
                 ]
     })
