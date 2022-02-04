@@ -1,7 +1,8 @@
 
 <p align="center">
   <img src="https://ptpimg.me/5502wc.gif">
-</p>  
+</p>
+
 # Installation
 ```
 pip install rsack
