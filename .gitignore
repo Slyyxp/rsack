@@ -1,6 +1,7 @@
 # Ransack specific
 settings.ini
 ransack_settings.ini
+rsack_settings.ini
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
