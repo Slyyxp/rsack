@@ -29,6 +29,3 @@ password | Password | Password123
 threads | Number of simultaenous downloads | `2`
 path | Download path | `C:\Users\Slyyxp\Desktop`
 lyrics | Lyrics type (Timed/Untimed) | `T` `N`
-
-# ToDo
-- 
