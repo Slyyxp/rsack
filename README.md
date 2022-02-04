@@ -4,6 +4,10 @@ MultiTool used for downloading tracks from various webstores.
 ```
 pip install rsack
 ```
+# To Do
+- [ ] Refactor Download() to allow artist batching  
+- [ ] Genie support
+
 ## Example Usage
 ```
 rsack --bugs --url "https://music.bugs.co.kr/album/4070269"
@@ -25,3 +29,6 @@ password | Password | Password123
 threads | Number of simultaenous downloads | `2`
 path | Download path | `C:\Users\Slyyxp\Desktop`
 lyrics | Lyrics type (Timed/Untimed) | `T` `N`
+
+# ToDo
+- 
