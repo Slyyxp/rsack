@@ -70,7 +70,9 @@ def track_to_flac(track, album, lyrics):
         "ARTIST": track['artist_disp_nm'],
         "TITLE": track['track_title'],
         "DISCNUMBER": str(track['disc_id']),
+        "DISCTOTAL": str(album['disc_total']),
         "TRACKNUMBER": str(track['track_no']),
+        "TRACKTOTAL": str(track['track_total']),
         "COMMENT": str(track['track_id']),
         "DATE": _format_date(track['release_ymd']),
         "GENRE": album['Genre'],
@@ -113,3 +115,19 @@ def get_settings_path():
         return os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
     else:
         return os.path._getfullpathname("./")
+
+def insert_total_tracks(tracks):
+    """Add total_tracks to track metadata
+
+    Args:
+        tracks (list): list of dicts containing track metadata
+    """
+    total_tracks_by_disc_id = {}
+    for track in tracks:
+        if track["disc_id"] not in total_tracks_by_disc_id:
+            total_tracks_by_disc_id[track["disc_id"]] = 0
+
+        total_tracks_by_disc_id[track["disc_id"]] += 1
+
+    for track in tracks:
+        track["track_total"] = total_tracks_by_disc_id[track["disc_id"]]

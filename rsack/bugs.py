@@ -8,7 +8,7 @@ from mutagen.id3 import ID3NoHeaderError
 from concurrent.futures import ThreadPoolExecutor
 
 from rsack.clients import bugs
-from rsack.utils import Settings, track_to_flac, determine_quality
+from rsack.utils import Settings, track_to_flac, determine_quality, insert_total_tracks
 
 
 class Download:
@@ -32,7 +32,12 @@ class Download:
 
         # Grab the metadata
         self.meta = self.collect()
-
+        # Acquire disc total by finding the last track entry and tacking the disc number
+        self.meta['disc_total'] = self.meta['Tracks'][-1]['disc_id']
+        # Add track_total to meta.
+        insert_total_tracks(self.meta['Tracks'])
+        
+        
         # Construct album path
         self.album_path = os.path.join(
             self.settings['path'], self.meta['Album_artist'], f"{self.meta['Album_artist']} - {self.meta['Album']}")
@@ -165,7 +170,7 @@ class Download:
             if self.cover_path:
                 with open(self.cover_path, 'rb') as cov_obj:
                     m_file.add(id3.APIC(3, 'image/jpg', 3, '', cov_obj.read()))
-                m_file.save(file_path, 'v2_version=3')
+            m_file.save(file_path, 'v2_version=3')
 
     def _get_lyrics(self, track_id, lyrics_tp):
         """Retrieves and formats track lyrics
