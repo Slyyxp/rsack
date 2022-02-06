@@ -55,7 +55,7 @@ class Download:
         with ThreadPoolExecutor(max_workers=int(self.settings['threads'])) as executor:
             executor.map(self._download, self.meta['Tracks'])
 
-    @logger.catch
+
     def _download(self, track):
         """Downloads the track and passes it on for tagging
 
@@ -140,8 +140,6 @@ class Download:
                 "ALBUM": id3.TALB,
                 "ALBUMARTIST": id3.TPE2,
                 "ARTIST": id3.TPE1,
-                "TRACKNUMBER": id3.TRCK,
-                "DISCNUMBER": id3.TPOS,
                 "COMMENT": id3.COMM,
                 "COMPOSER": id3.TCOM,
                 "COPYRIGHT": id3.TCOP,
@@ -164,8 +162,10 @@ class Download:
                     id3tag = legend[k]
                     m_file[id3tag.__name__] = id3tag(encoding=3, text=v)
                 except KeyError:
-                    logger.debug(f"KeyError for {legend[k]}")
-                    pass
+                    continue
+            # Track and disc numbers
+            m_file.add(id3.TRCK(encoding=3, text=f"{track['track_no']}/{track['track_total']}"))
+            m_file.add(id3.TPOS(encoding=3, text=f"{track['disc_id']}/{self.meta['disc_total']}"))
             # Apply cover artwork
             if self.cover_path:
                 with open(self.cover_path, 'rb') as cov_obj:
