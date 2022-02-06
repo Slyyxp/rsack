@@ -29,15 +29,14 @@ class Download:
         self.client = bugs.Client(self.settings)
         self.conn_info = self.client.auth()
         self.api_key = self.client.get_api_key()
-        
+
         # Grab the metadata
         self.meta = self.collect()
         # Acquire disc total by finding the last track entry and tacking the disc number
         self.meta['disc_total'] = self.meta['Tracks'][-1]['disc_id']
         # Add track_total to meta.
         insert_total_tracks(self.meta['Tracks'])
-        
-        
+
         # Construct album path
         self.album_path = os.path.join(
             self.settings['path'], self.meta['Album_artist'], f"{self.meta['Album_artist']} - {self.meta['Album']}")
@@ -54,7 +53,6 @@ class Download:
         logger.info(f"Threads: {self.settings['threads']}")
         with ThreadPoolExecutor(max_workers=int(self.settings['threads'])) as executor:
             executor.map(self._download, self.meta['Tracks'])
-
 
     def _download(self, track):
         """Downloads the track and passes it on for tagging
@@ -164,8 +162,10 @@ class Download:
                 except KeyError:
                     continue
             # Track and disc numbers
-            m_file.add(id3.TRCK(encoding=3, text=f"{track['track_no']}/{track['track_total']}"))
-            m_file.add(id3.TPOS(encoding=3, text=f"{track['disc_id']}/{self.meta['disc_total']}"))
+            m_file.add(
+                id3.TRCK(encoding=3, text=f"{track['track_no']}/{track['track_total']}"))
+            m_file.add(
+                id3.TPOS(encoding=3, text=f"{track['disc_id']}/{self.meta['disc_total']}"))
             # Apply cover artwork
             if self.cover_path:
                 with open(self.cover_path, 'rb') as cov_obj:
@@ -225,7 +225,7 @@ class Download:
         Returns:
             [dict]: Cleaned metadata
         """
-        clean_meta = {"Album": meta['list'][0]['album_info']['result']['artist_disp_nm'],
+        clean_meta = {"Album": meta['list'][0]['album_info']['result']['title'],
                       "Album_artist": meta['list'][0]['album_info']['result']['artist_disp_nm'],
                       "Genre": meta['list'][0]['album_info']['result']['genre_str'].replace(",", "; "),
                       "Label": '; '.join(str(label['label_nm']) for label in meta['list'][0]['album_info']['result']['labels']),
