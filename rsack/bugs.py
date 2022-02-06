@@ -29,7 +29,7 @@ class Download:
         self.client = bugs.Client(self.settings)
         self.conn_info = self.client.auth()
         self.api_key = self.client.get_api_key()
-
+        
         # Grab the metadata
         self.meta = self.collect()
         # Acquire disc total by finding the last track entry and tacking the disc number
