@@ -7,9 +7,6 @@
 ```
 pip install rsack
 ```
-# To Do
-- [ ] Refactor Download() to allow artist batching  
-- [ ] Genie support
 
 ## Example Usage
 ```
