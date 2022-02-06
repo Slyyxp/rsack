@@ -71,16 +71,18 @@ class Download:
             "http://api.bugs.co.kr/3/tracks/{}/listen/android/flac".format(
                 track_id),
             params=params, stream=True)
-        r.raise_for_status()
-        # Directory management
-        file_path = os.path.join(
-            self.album_path, f"{track['track_title']}.{determine_quality(track['svc_flac_yn'])}")
-        with open(file_path, 'wb') as f:
-            for chunk in r.iter_content(32 * 1024):
-                if chunk:
-                    f.write(chunk)
-        self._tag(track, file_path)
-        logger.info(f"{track['track_title']} downloaded and tagged")
+        if r.status_code == 404:
+            logger.info(f"{track['track_title']} unavailable, skipping.")
+        else:
+            # Directory management
+            file_path = os.path.join(
+                self.album_path, f"{track['track_title']}.{determine_quality(track['svc_flac_yn'])}")
+            with open(file_path, 'wb') as f:
+                for chunk in r.iter_content(32 * 1024):
+                    if chunk:
+                        f.write(chunk)
+            self._tag(track, file_path)
+            logger.info(f"{track['track_title']} downloaded and tagged")
 
     def _download_cover(self, path):
         """Downloads album artwork
