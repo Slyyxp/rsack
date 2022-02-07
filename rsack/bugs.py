@@ -79,7 +79,7 @@ class Download:
         else:
             # Directory management
             file_path = os.path.join(
-                self.album_path, f"{track['track_title']}.{determine_quality(track['svc_flac_yn'])}")
+                self.album_path, f"{track['track_no']}. {track['track_title']}.{determine_quality(track['svc_flac_yn'])}")
             with open(file_path, 'wb') as f:
                 for chunk in r.iter_content(32 * 1024):
                     if chunk:
