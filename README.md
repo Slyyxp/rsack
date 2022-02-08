@@ -21,7 +21,9 @@ Command  | Description  | Example
 -b, --bugs | Specify Bugs Webstore | No additional parameters
 -cfg, --config | Re-creates config file | No additional parameters
 
-# Settings.ini
+# rsack_settings.ini
+`rsack_settings.ini` can be located in your home folder.
+
 Key  | Description  | Example
 ------------- | ------------- | -------------
 username | Email used for sign-in  | `Slyyxp@protonmail.com`
