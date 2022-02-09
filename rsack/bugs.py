@@ -8,7 +8,7 @@ from mutagen.id3 import ID3NoHeaderError
 from concurrent.futures import ThreadPoolExecutor
 
 from rsack.clients import bugs
-from rsack.utils import Settings, track_to_flac, determine_quality, insert_total_tracks
+from rsack.utils import Settings, track_to_flac, determine_quality, insert_total_tracks, contribution_check, sanitize
 
 
 class Download:
@@ -20,9 +20,6 @@ class Download:
             type (str): Release type (album/artist/track)
             id (int/str): UID of album/artist/track
         """
-        # Initialize the type and ID of the release
-        self.type = type
-        self.id = id
         self.settings = Settings().Bugs()
 
         # Create and authorize the client
@@ -31,15 +28,37 @@ class Download:
         self.api_key = self.client.get_api_key()
 
         # Grab the metadata
-        self.meta = self.collect()
+        self.meta = self.collect(type, id)
+
+        if type == "artist":
+            self._artist(id)
+        elif type == "album":
+            self._album(self.meta['list'][0]['album_info']['result'])
+
+    def _artist(self, id):
+        logger.info(
+            f"{len(self.meta['list'][1]['artist_album']['list'])} releases found")
+        for album in self.meta['list'][1]['artist_album']['list']:
+            contribution = contribution_check(id, album['artist_id'])
+            if contribution:
+                if self.settings['contributions'] == 'Y':
+                    self._album(album)
+                else:
+                    logger.debug("Skipping album contribution")
+            else:
+                self._album(album)
+
+    def _album(self, album):
+        self.album = album
+        logger.info(f"Album: {album['title']}")
         # Acquire disc total by finding the last track entry and tacking the disc number
-        self.meta['disc_total'] = self.meta['Tracks'][-1]['disc_id']
+        album['disc_total'] = album['tracks'][-1]['disc_id']
         # Add track_total to meta.
-        insert_total_tracks(self.meta['Tracks'])
+        insert_total_tracks(album['tracks'])
 
         # Construct album path
         self.album_path = os.path.join(
-            self.settings['path'], self.meta['Album_artist'], f"{self.meta['Album_artist']} - {self.meta['Album']}")
+            self.settings['path'], sanitize(album['artist_disp_nm']), f"{sanitize(album['artist_disp_nm'])} - {sanitize(album['title'])}")
         if not os.path.exists(self.album_path):
             logger.debug(f"Creating {self.album_path}")
             os.makedirs(self.album_path)
@@ -52,7 +71,7 @@ class Download:
         # Begin downloading tracks
         logger.info(f"Threads: {self.settings['threads']}")
         with ThreadPoolExecutor(max_workers=int(self.settings['threads'])) as executor:
-            executor.map(self._download, self.meta['Tracks'])
+            executor.map(self._download, album['tracks'])
 
     def _download(self, track):
         """Downloads the track and passes it on for tagging
@@ -100,7 +119,7 @@ class Download:
         if os.path.exists(cover_path):
             logger.info('Cover already exists, skipping.')
         else:
-            r = requests.get(self.meta['Cover_url']['500'])
+            r = requests.get(self.album['img_urls']['500'])
             r.raise_for_status
             with open(cover_path, 'wb') as f:
                 f.write(r.content)
@@ -115,7 +134,7 @@ class Download:
             file_path ([path]): Path of .flac or .mp3 file
         """
         lyrics = self._get_lyrics(track['track_id'], track['lyrics_tp'])
-        tags = track_to_flac(track, self.meta, lyrics)
+        tags = track_to_flac(track, self.album, lyrics)
         # If file is FLAC
         if str(file_path).endswith('.flac'):
             f_file = FLAC(file_path)
@@ -165,7 +184,7 @@ class Download:
             m_file.add(
                 id3.TRCK(encoding=3, text=f"{track['track_no']}/{track['track_total']}"))
             m_file.add(
-                id3.TPOS(encoding=3, text=f"{track['disc_id']}/{self.meta['disc_total']}"))
+                id3.TPOS(encoding=3, text=f"{track['disc_id']}/{self.album['disc_total']}"))
             # Apply cover artwork
             if self.cover_path:
                 with open(self.cover_path, 'rb') as cov_obj:
@@ -203,7 +222,8 @@ class Download:
                 lyrics = ""
         return lyrics
 
-    def collect(self):
+    @logger.catch
+    def collect(self, type, id):
         """Returns specified metadata from Bugs.co.kr API
 
         Args:
@@ -213,23 +233,5 @@ class Download:
         Returns:
             [dict]: dict containing usable metadata for tagging
         """
-        meta = self.client.get_meta(type=self.type, id=int(self.id))
-        return self._clean(meta)
-
-    def _clean(self, meta):
-        """Cuts out all unnecessary data and returns
-
-        Args:
-            meta ([dict]): Metadata provided in api response
-
-        Returns:
-            [dict]: Cleaned metadata
-        """
-        clean_meta = {"Album": meta['list'][0]['album_info']['result']['title'],
-                      "Album_artist": meta['list'][0]['album_info']['result']['artist_disp_nm'],
-                      "Genre": meta['list'][0]['album_info']['result']['genre_str'].replace(",", "; "),
-                      "Label": '; '.join(str(label['label_nm']) for label in meta['list'][0]['album_info']['result']['labels']),
-                      "Cover_url": meta['list'][0]['album_info']['result']['img_urls'],
-                      "Tracks": meta['list'][0]['album_info']['result']['tracks'],
-                      }
-        return clean_meta
+        meta = self.client.get_meta(type=type, id=int(id))
+        return meta

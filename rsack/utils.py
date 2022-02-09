@@ -31,7 +31,7 @@ class Settings:
         bugs_threads = input('How many Bugs.co.kr download threads do you want to use?: (2-3 recommended)\n')
         bugs_path = input('Enter your download path for Bugs.co.kr:\n')
         bugs_lyrics = input('Enter your preferred Bugs.co.kr lyrics type: (T = Timed, N = Normal)\n')
-        
+        bugs_contributions = input('Include contributions in artist batches?: (Y/N)\n')
         # Genie.co.kr Inputs
         genie_username = input(
             'Please enter your Genie.co.kr username: (If none leave blank)\n')
@@ -45,7 +45,8 @@ class Settings:
                           'password': bugs_password,
                           'threads': bugs_threads,
                           'path': bugs_path,
-                          'lyrics': bugs_lyrics}
+                          'lyrics': bugs_lyrics,
+                          'contributions': bugs_contributions}
         config['Genie'] = {'username': genie_username,
                            'password': genie_password,
                            'threads': genie_threads,
@@ -85,8 +86,8 @@ def track_to_flac(track, album, lyrics):
         "TRACKTOTAL": str(track['track_total']),
         "COMMENT": str(track['track_id']),
         "DATE": _format_date(track['release_ymd']),
-        "GENRE": album['Genre'],
-        "LABEL": album['Label'],
+        "GENRE": album['genre_str'],
+        "LABEL": "",
         "LYRICS": lyrics
     }
     return meta
@@ -181,3 +182,9 @@ def sanitize(fn):
 		return sub(r'[\/:*?"><|]', '_', fn)
 	else:
 		return sub('/', '_', fn)
+
+def contribution_check(artist_id_provided, artist_id_api):
+	if int(artist_id_provided) == int(artist_id_api):
+		return False
+	else:
+		return True

@@ -24,7 +24,7 @@ def main():
             if "album" in url:
                 bugs.Download(type="album", id=id)
             elif "artist" in url:
-                logger.critical("Artist batching not yet available")
+                bugs.Download(type="artist", id=id)
             elif "track" in url:
                 bugs.Download(type="Single tracks not yet available", id=id)
     elif args.genie:
