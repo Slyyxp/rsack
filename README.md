@@ -3,6 +3,14 @@
   <img src="https://ptpimg.me/5502wc.gif">
 </p>
 
+# Features
+- Bugs.co.kr support
+- Genie.co.kr support
+- Batch download artist pages
+- FLAC 24/16
+- Accessible clients
+- Simultaneous track downloads
+
 # Installation
 ```
 pip install rsack
@@ -14,21 +22,5 @@ rsack --bugs --url "https://music.bugs.co.kr/album/4070269"
 rsack -b -u "https://music.bugs.co.kr/album/4070269"
 ```
 
-# Command Usage
-Command  | Description  | Example
-------------- | ------------- | -------------
--u, --url | URL  | `https://music.bugs.co.kr/album/20343816`, `https://genie.co.kr/detail/albumInfo?axnm=82482261`
--b, --bugs | Specify Bugs Webstore | No additional parameters
--g, --genie | Specify Genie Webstore | No additional parameters
--cfg, --config | Re-creates config file | No additional parameters
-
 # rsack_settings.ini
 `rsack_settings.ini` can be located in your home folder.
-
-Key  | Description  | Example
-------------- | ------------- | -------------
-username | Email used for sign-in  | `Slyyxp@protonmail.com`
-password | Password | Password123
-threads | Number of simultaenous downloads | `2`
-path | Download path | `C:\Users\Slyyxp\Desktop`
-lyrics | Lyrics type (Timed/Untimed) | `T` `N`
