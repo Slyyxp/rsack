@@ -29,7 +29,7 @@ rsack -b -u "https://music.bugs.co.kr/album/4070269"
 ```python
 from rsack.clients import genie
 
-def album_information():
+def information():
     client = genie.Client() # Initialize client object
     client.auth(username="MyUsername", password="MyPassword") # Authorize user
     album = client.get_album(82525503) # Make call for album information using album UID
@@ -37,5 +37,5 @@ def album_information():
     track = client.get_stream_meta(95970973) # Make call for stream information using track UID
     
 if __name__ == "__main__":
-    album_information()
+    information()
 ```
