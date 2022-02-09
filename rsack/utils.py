@@ -1,5 +1,6 @@
 import os
-from re import match
+from platform import system
+from re import match, sub
 from datetime import datetime
 from loguru import logger
 from getpass import getpass
@@ -9,9 +10,6 @@ from configparser import ConfigParser
 class Settings:
     def __init__(self, check=False):
         self.ini_path = os.path.join(get_settings_path(), 'rsack_settings.ini')
-        if check:
-            logger.debug('Removing settings.ini')
-            os.remove(self.ini_path)
         # If settings doesn't exist then create one
         if not os.path.isfile(self.ini_path):
             logger.debug(f'Generating {self.ini_path}')
@@ -25,7 +23,7 @@ class Settings:
         """
         Generates settings.ini based on user input
         """
-        # Inputs
+        # Bugs.co.kr Inputs
         bugs_username = input(
             'Please enter your Bugs.co.kr email: (If none leave blank)\n')
         bugs_password = getpass(
@@ -33,6 +31,14 @@ class Settings:
         bugs_threads = input('How many Bugs.co.kr download threads do you want to use?: (2-3 recommended)\n')
         bugs_path = input('Enter your download path for Bugs.co.kr:\n')
         bugs_lyrics = input('Enter your preferred Bugs.co.kr lyrics type: (T = Timed, N = Normal)\n')
+        
+        # Genie.co.kr Inputs
+        genie_username = input(
+            'Please enter your Genie.co.kr username: (If none leave blank)\n')
+        genie_password = getpass(
+            'Please enter your Genie.co.kr password: (If none leave blank)\n')
+        genie_threads = input('How many Genie.co.kr download threads do you want to use?: (2-3 recommended)\n')
+        genie_path = input('Enter your download path for Genie.co.kr:\n')
         # Write file
         config = ConfigParser()
         config['Bugs'] = {'username': bugs_username,
@@ -40,6 +46,10 @@ class Settings:
                           'threads': bugs_threads,
                           'path': bugs_path,
                           'lyrics': bugs_lyrics}
+        config['Genie'] = {'username': genie_username,
+                           'password': genie_password,
+                           'threads': genie_threads,
+                           'path': genie_path}
         with open(self.ini_path, 'w+') as configfile:
             config.write(configfile)
 
@@ -101,10 +111,21 @@ def determine_quality(svc_flac_yn):
     else:
         return 'mp3'
 
-def get_id(url):
+def bugs_id(url):
 	return match(
 		r'https?://music\.bugs\.co\.kr/(?:(?:album|artist|track|playlist)/|[a-z]{2}-[a-z]{2}-?\w+(?:-\w+)*-?)(\w+)',
 		url).group(1)
+
+def genie_id(url):
+	"""
+	:param url: Genie url
+	:return: Album ID
+	"""
+	expression = "https://genie.co.kr/detail/(artistInfo|albumInfo)......([0-9]*)"
+	result = match(expression, url)
+	if result:
+		return result
+	logger.critical("Invalid URL: {}".format(url))
  
 def get_settings_path():
     if "XDG_CONFIG_HOME" in os.environ:
@@ -115,6 +136,20 @@ def get_settings_path():
         return os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
     else:
         return os.path._getfullpathname("./")
+
+def get_ext(type):
+    """Returns file extension
+
+    Args:
+        type (str): FILE_EXT from API response
+
+    Returns:
+        [str]: file extension string
+    """
+    if type == "MP3":
+        return "mp3"
+    else:
+        return "flac"
 
 def insert_total_tracks(tracks):
     """Add total_tracks to track metadata
@@ -131,3 +166,18 @@ def insert_total_tracks(tracks):
 
     for track in tracks:
         track["track_total"] = total_tracks_by_disc_id[track["disc_id"]]
+
+def _is_win():
+	if system() == 'Windows':
+		return True
+
+def sanitize(fn):
+	"""
+	:param fn: Filename
+	:return: Sanitized string
+	Removes invalid characters in the filename dependant on Operating System.
+	"""
+	if _is_win():
+		return sub(r'[\/:*?"><|]', '_', fn)
+	else:
+		return sub('/', '_', fn)
