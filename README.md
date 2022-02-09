@@ -17,8 +17,9 @@ rsack -b -u "https://music.bugs.co.kr/album/4070269"
 # Command Usage
 Command  | Description  | Example
 ------------- | ------------- | -------------
--u, --url | URL  | `https://music.bugs.co.kr/album/20343816`, `https://music.bugs.co.kr/artist/80327433`
+-u, --url | URL  | `https://music.bugs.co.kr/album/20343816`, `https://genie.co.kr/detail/albumInfo?axnm=82482261`
 -b, --bugs | Specify Bugs Webstore | No additional parameters
+-g, --genie | Specify Genie Webstore | No additional parameters
 -cfg, --config | Re-creates config file | No additional parameters
 
 # rsack_settings.ini
