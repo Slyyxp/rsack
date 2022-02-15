@@ -1,13 +1,14 @@
 from loguru import logger
 from argparse import ArgumentParser
 
-from rsack import bugs, genie
+from rsack import bugs, genie, qobuz
 from rsack.utils import bugs_id, genie_id, Settings
 
 def get_args():
     parser = ArgumentParser()
     parser.add_argument('-b', '--bugs', action='store_true', dest="bugs", required=False)
     parser.add_argument('-g', '--genie', action='store_true', dest="genie", required=False)
+    parser.add_argument('-q', '--qobuz', action='store_true', dest="qobuz", required=False)
     parser.add_argument('-u', '--url', nargs='*', dest="url", required=False)
     parser.add_argument('-cfg', '--config', action='store_true', dest="config", required=False)
     parser.add_argument('-o', '--open', action='store_true', dest="open", required=False)
@@ -37,4 +38,6 @@ def main():
             else: # Catch invalid info types
                 logger.critical("URL type unkown")
             genie.Download(type=type, id=match.group(2))
-            
+    elif args.qobuz:
+        for url in args.url:
+            qobuz.Download(url)

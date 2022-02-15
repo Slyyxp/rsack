@@ -32,6 +32,7 @@ class Settings:
         bugs_path = input('Enter your download path for Bugs.co.kr:\n')
         bugs_lyrics = input('Enter your preferred Bugs.co.kr lyrics type: (T = Timed, N = Normal)\n')
         bugs_contributions = input('Include contributions in artist batches?: (Y/N)\n')
+        
         # Genie.co.kr Inputs
         genie_username = input(
             'Please enter your Genie.co.kr username: (If none leave blank)\n')
@@ -39,6 +40,16 @@ class Settings:
             'Please enter your Genie.co.kr password: (If none leave blank)\n')
         genie_threads = input('How many Genie.co.kr download threads do you want to use?: (2-3 recommended)\n')
         genie_path = input('Enter your download path for Genie.co.kr:\n')
+        
+        # Qobuz Inputs
+        qobuz_username = input(
+            'Please enter your Qobuz email: (If none leave blank)\n'
+        )
+        qobuz_password = getpass(
+            'Please enter your Qobuz password: (If none leave blank)\n'
+        )
+        qobuz_path = input('Enter your download path for Qobuz: \n')
+        
         # Write file
         config = ConfigParser()
         config['Bugs'] = {'username': bugs_username,
@@ -51,6 +62,9 @@ class Settings:
                            'password': genie_password,
                            'threads': genie_threads,
                            'path': genie_path}
+        config['Qobuz'] = {'username': qobuz_username,
+                           'password': qobuz_password,
+                           'path': qobuz_path}
         with open(self.ini_path, 'w+') as configfile:
             config.write(configfile)
 
@@ -65,6 +79,12 @@ class Settings:
         Returns the contents of the 'Genie' section of settings.ini as dict.
         """
         return dict(self.config.items('Genie'))
+    
+    def Qobuz(self):
+        """
+        Returns the contents of the 'Qobuz' section of settings.ini as dict.
+        """
+        return dict(self.config.items('Qobuz'))
 
 
 def track_to_flac(track, album, lyrics):
