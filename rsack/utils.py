@@ -179,9 +179,9 @@ def sanitize(fn):
 	Removes invalid characters in the filename dependant on Operating System.
 	"""
 	if _is_win():
-		return sub(r'[\/:*?"><|]', '_', fn)
+		return sub(r'[\/:*?"><|]', '_', fn).strip()
 	else:
-		return sub('/', '_', fn)
+		return sub('/', '_', fn).strip()
 
 def contribution_check(artist_id_provided, artist_id_api):
 	if int(artist_id_provided) == int(artist_id_api):
