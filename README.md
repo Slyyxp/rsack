@@ -25,6 +25,7 @@ pip install rsack
 
 ## Qobuz
 - FLAC16
+- Artist batching
 - Reliant on [qobuz_dl](https://github.com/vitiko98/qobuz-dl) by [vikito98](https://github.com/vitiko98) until further notice.
 
 
