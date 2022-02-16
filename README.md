@@ -24,7 +24,7 @@ pip install rsack
 - Concurrent downloads
 
 ## Qobuz
-- FLAC16
+- FLAC24, FLAC16
 - Artist batching
 - Reliant on [qobuz_dl](https://github.com/vitiko98/qobuz-dl) by [vikito98](https://github.com/vitiko98) until further notice.
 
