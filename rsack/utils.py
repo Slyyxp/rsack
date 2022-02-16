@@ -49,6 +49,7 @@ class Settings:
             'Please enter your Qobuz password: (If none leave blank)\n'
         )
         qobuz_path = input('Enter your download path for Qobuz: \n')
+        qobuz_quality = input('Qobuz quality: (5: MP3, 6: 16bit 44.1kHz, 7: 24bit <96kHz, 27: 24bit >96kHz\n')
         
         # Write file
         config = ConfigParser()
@@ -64,7 +65,8 @@ class Settings:
                            'path': genie_path}
         config['Qobuz'] = {'username': qobuz_username,
                            'password': qobuz_password,
-                           'path': qobuz_path}
+                           'path': qobuz_path,
+                           'quality': qobuz_quality}
         with open(self.ini_path, 'w+') as configfile:
             config.write(configfile)
 
