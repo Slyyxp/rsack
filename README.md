@@ -1,9 +1,3 @@
-
-<p align="center">
-  <img src="https://ptpimg.me/5502wc.gif">
-</p>
-
-
 # Installation
 ```bash
 pip install rsack
