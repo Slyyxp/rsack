@@ -23,8 +23,8 @@ class Download:
         self.settings = Settings().Bugs()
 
         # Create and authorize the client
-        self.client = bugs.Client(self.settings)
-        self.conn_info = self.client.auth()
+        self.client = bugs.Client()
+        self.conn_info = self.client.auth(username=self.settings['username'], password=self.settings['password'])
         self.api_key = self.client.get_api_key()
 
         # Grab the metadata

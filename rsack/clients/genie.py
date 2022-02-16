@@ -91,7 +91,7 @@ class Client:
             logger.critical("Failed to retrieve metadata")
         return r
 
-    def get_stream_meta(self, id, q):
+    def get_stream_meta(self, id, q=None):
         """
         :param id: Album ID
         :param q: Album quality.
@@ -101,6 +101,8 @@ class Client:
                 2 - 16bit FLAC
                 3 - 24bit FLAC
         """
+        if q is None:
+            q = '24bit'
         data = {
             "bitrate": q,
             "dcd": self.dev_id,

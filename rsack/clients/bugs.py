@@ -3,20 +3,21 @@ import requests
 from loguru import logger
 
 class Client:
-    def __init__(self, settings):
+    def __init__(self):
         self.session = requests.Session()
-        self.settings = settings
         self.api_key = "b2de0fbe3380408bace96a5d1a76f800"
         self.session.headers.update({
             "User-Agent": "Mobile|Bugs|4.11.30|Android|5.1.1|SM-G965N|samsung|market",
             "Host": "api.bugs.co.kr",
         })
  
-    def auth(self):
+    def auth(self, username, password):
+        self.username = username
+        self.password = password
         data = {
             "device_id": "gwAHWlkOYX_T8Sl43N78GiaD6Sg_",
-            "passwd": self.settings['password'],
-            "userid": self.settings['username']
+            "passwd": password,
+            "userid": username
         }
         r = self.make_call("secure", "mbugs/3/login?", data=data)
         if r['ret_code'] == 300:
