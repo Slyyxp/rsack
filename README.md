@@ -29,7 +29,7 @@ pip install rsack
 - Reliant on [qobuz_dl](https://github.com/vitiko98/qobuz-dl) by [vikito98](https://github.com/vitiko98) until further notice.
 
 
-## Example Usage
+# Example Usage
 ```
 rsack --bugs --url "https://music.bugs.co.kr/album/4070269"
 rsack --genie --url "https://genie.co.kr/detail/albumInfo?axnm=82529386"
