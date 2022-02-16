@@ -44,8 +44,7 @@ rsack --qobuz --url "https://play.qobuz.com/album/pby9ir4znxqxc"
 [Example Configuration](https://github.com/Slyyxp/rsack/wiki/Configuration)  
 [Account Creation](https://github.com/Slyyxp/rsack/wiki/Account-Creation)  
 
-# Accessing clients
-Retrieving API data using rsack is rather simple.
+# Retrieving API Data
 ```python
 from rsack.clients import bugs
 
