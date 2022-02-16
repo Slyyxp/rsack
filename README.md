@@ -1,3 +1,5 @@
+![GitHub last commit](https://img.shields.io/github/last-commit/Slyyxp/rsack) ![GitHub repo size](https://img.shields.io/github/repo-size/Slyyxp/rsack) ![GitHub](https://img.shields.io/github/license/Slyyxp/rsack) ![PyPI - Downloads](https://img.shields.io/pypi/dm/rsack) ![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/Slyyxp/rsack) ![GitHub issues](https://img.shields.io/github/issues-raw/Slyyxp/rsack)
+
 # Installation
 ```bash
 pip install rsack
