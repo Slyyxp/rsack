@@ -43,3 +43,5 @@ rsack --qobuz --url "https://play.qobuz.com/album/pby9ir4znxqxc"
 [Command Usage](https://github.com/Slyyxp/rsack/wiki/Command-Usage)  
 [Example Configuration](https://github.com/Slyyxp/rsack/wiki/Configuration)  
 [Account Creation](https://github.com/Slyyxp/rsack/wiki/Account-Creation)  
+
+# Accessing clients
