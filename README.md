@@ -5,8 +5,15 @@
 
 
 # Installation
-```
+```bash
 pip install rsack
+```
+
+## Alternatively..
+```bash
+git clone https://github.com/Slyyxp/rsack.git
+cd rsack
+python setup.py install
 ```
 
 # Features
