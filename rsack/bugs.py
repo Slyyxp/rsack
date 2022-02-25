@@ -217,13 +217,15 @@ class Download:
                 f'[{datetime.fromtimestamp(round(float(a), 2)).strftime("%M:%S.%f")[0:-4]}]{b}' for a, b in
                 line_split))
         # If user prefers untimed or the only available is untimed then use untimed
-        if 'lyrics_tp' == 'N' or self.settings['lyrics'] == 'N':
+        elif 'lyrics_tp' == 'N' or self.settings['lyrics'] == 'N':
             r = requests.get(
                 'https://music.bugs.co.kr/player/lyrics/N/{}'.format(str(track_id)))
             lyrics = r.json()['lyrics']
             # If unavailable leave as empty string
             if lyrics_tp is None:
                 lyrics = ""
+        else:
+            lyrics = ""
         return lyrics
 
     @logger.catch
