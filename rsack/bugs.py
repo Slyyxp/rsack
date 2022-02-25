@@ -57,8 +57,12 @@ class Download:
         insert_total_tracks(album['tracks'])
 
         # Construct album path
-        self.album_path = os.path.join(
-            self.settings['path'], sanitize(album['artist_disp_nm']), f"{sanitize(album['artist_disp_nm'])} - {sanitize(album['title'])}")
+        if self.settings['artist_folders'].upper() == 'Y':
+            self.album_path = os.path.join(
+                self.settings['path'], sanitize(album['artist_disp_nm']), f"{sanitize(album['artist_disp_nm'])} - {sanitize(album['title'])}")
+        else:
+            self.album_path = os.path.join(
+                self.settings['path'], f"{sanitize(album['artist_disp_nm'])} - {sanitize(album['title'])}")
         if not os.path.exists(self.album_path):
             logger.debug(f"Creating {self.album_path}")
             os.makedirs(self.album_path)

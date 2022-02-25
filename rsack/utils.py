@@ -30,6 +30,7 @@ class Settings:
             'Please enter your Bugs.co.kr password: (If none leave blank)\n')
         bugs_threads = input('How many Bugs.co.kr download threads do you want to use?: (2-3 recommended)\n')
         bugs_path = input('Enter your download path for Bugs.co.kr:\n')
+        bugs_artist_folders = input('Utilize artist folders in Bugs directory structure? (Y/N)')
         bugs_lyrics = input('Enter your preferred Bugs.co.kr lyrics type: (T = Timed, N = Normal)\n')
         bugs_contributions = input('Include contributions in artist batches?: (Y/N)\n')
         
@@ -40,6 +41,7 @@ class Settings:
             'Please enter your Genie.co.kr password: (If none leave blank)\n')
         genie_threads = input('How many Genie.co.kr download threads do you want to use?: (2-3 recommended)\n')
         genie_path = input('Enter your download path for Genie.co.kr:\n')
+        genie_artist_folders = input('Utilize artist folders in Genie directory structure? (Y/N)')
         
         # Qobuz Inputs
         qobuz_username = input(
@@ -57,12 +59,14 @@ class Settings:
                           'password': bugs_password,
                           'threads': bugs_threads,
                           'path': bugs_path,
+                          'artist_folders': bugs_artist_folders,
                           'lyrics': bugs_lyrics,
                           'contributions': bugs_contributions}
         config['Genie'] = {'username': genie_username,
                            'password': genie_password,
                            'threads': genie_threads,
-                           'path': genie_path}
+                           'path': genie_path,
+                           'artist_folders': genie_artist_folders}
         config['Qobuz'] = {'username': qobuz_username,
                            'password': qobuz_password,
                            'path': qobuz_path,

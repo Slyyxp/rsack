@@ -43,8 +43,12 @@ class Download:
             f"Album: {unquote(meta['DATA0']['DATA'][0]['ALBUM_NAME'])}")
         artist_name = sanitize(
             unquote(meta['DATA0']['DATA'][0]['ARTIST_NAME']))
-        self.album_path = os.path.join(
-            self.settings['path'], artist_name, f"{artist_name} - {sanitize(unquote(meta['DATA0']['DATA'][0]['ALBUM_NAME']))}")
+        if self.settings['artist_folders'].upper() == 'Y':
+            self.album_path = os.path.join(
+                self.settings['path'], artist_name, f"{artist_name} - {sanitize(unquote(meta['DATA0']['DATA'][0]['ALBUM_NAME']))}")
+        else:
+            self.album_path = os.path.join(
+                self.settings['path'], f"{artist_name} - {sanitize(unquote(meta['DATA0']['DATA'][0]['ALBUM_NAME']))}")
         if not os.path.isdir(self.album_path):
             os.makedirs(self.album_path)
         self._download_cover(
