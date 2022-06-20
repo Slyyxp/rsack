@@ -148,8 +148,12 @@ def genie_id(url):
 	:param url: Genie url
 	:return: Album ID
 	"""
-	expression = "genie.co.kr/detail/(artistInfo|albumInfo)......([0-9]*)"
+	expression = r"https://genie.co.kr/detail/(artistInfo|albumInfo)......([0-9]*)"
 	result = match(expression, url)
+	# This shouldn't be needed, regex needs to be fixed.
+	if not result:
+		expression = r"https://www.genie.co.kr/detail/(artistInfo|albumInfo)......([0-9]*)"
+		result = match(expression, url)
 	if result:
 		return result
 	logger.critical("Invalid URL: {}".format(url))
