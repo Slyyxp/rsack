@@ -148,7 +148,7 @@ def genie_id(url):
 	:param url: Genie url
 	:return: Album ID
 	"""
-	expression = "https://genie.co.kr/detail/(artistInfo|albumInfo)......([0-9]*)"
+	expression = "genie.co.kr/detail/(artistInfo|albumInfo)......([0-9]*)"
 	result = match(expression, url)
 	if result:
 		return result
