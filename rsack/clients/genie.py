@@ -84,7 +84,8 @@ class Client:
             "dcd": self.dev_id,
             "xxnm": id,
             "unm": self.usr_num,
-            "mts": "Y"
+            "mts": "Y",
+            "pgsize": 500
         }
         r = self.make_call("app", "song/j_ArtistAlbumList.json", data)
         if r['Result']['RetCode'] != "0":
