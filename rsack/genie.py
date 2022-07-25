@@ -88,7 +88,7 @@ class Download:
         r = self.client.session.get(unquote(meta['STREAMING_MP3_URL']))
         r.raise_for_status()
         if os.path.exists(file_path):
-            logger.info(f"{file_path} already exists.")
+            logger.debug(f"{file_path} already exists.")
         else:
             with open(file_path, 'wb') as f:
                 for chunk in r.iter_content(32 * 1024):
