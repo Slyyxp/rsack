@@ -87,12 +87,15 @@ class Download:
             self.album_path, f"{track_number}. {sanitize(unquote(meta['SONG_NAME']))}.{ext}")
         r = self.client.session.get(unquote(meta['STREAMING_MP3_URL']))
         r.raise_for_status()
-        with open(file_path, 'wb') as f:
-            for chunk in r.iter_content(32 * 1024):
-                if chunk:
-                    f.write(chunk)
-        self._fix_tags(file_path, ext, track_number, disc_number,
-                       track_artist, unquote(meta['SONG_NAME']))
+        if os.path.exists(file_path):
+            logger.info(f"{file_path} already exists.")
+        else:
+            with open(file_path, 'wb') as f:
+                for chunk in r.iter_content(32 * 1024):
+                    if chunk:
+                        f.write(chunk)
+            self._fix_tags(file_path, ext, track_number, disc_number,
+                        track_artist, unquote(meta['SONG_NAME']))
 
     def _fix_tags(self, path, ext, track_number, disc_number, track_artist, track_title):
         if ext == "mp3":
