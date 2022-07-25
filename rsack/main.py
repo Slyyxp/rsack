@@ -1,11 +1,13 @@
 from loguru import logger
 from argparse import ArgumentParser
 
+from rsack.version import __version__
 from rsack import bugs, genie, qobuz
 from rsack.utils import bugs_id, genie_id, Settings
 
 def get_args():
     parser = ArgumentParser()
+    parser.add_argument('-v', '--version', action='store_true', dest='version', required=False)
     parser.add_argument('-b', '--bugs', action='store_true', dest="bugs", required=False)
     parser.add_argument('-g', '--genie', action='store_true', dest="genie", required=False)
     parser.add_argument('-q', '--qobuz', action='store_true', dest="qobuz", required=False)
@@ -17,8 +19,10 @@ def get_args():
     
 def main():
     args = get_args()
+    if args.version:
+        print(__version__)
     if args.config:
-            Settings(check=True)
+        Settings(check=True)
     if args.bugs:
         for url in args.url:
             id = bugs_id(url)
