@@ -113,7 +113,7 @@ def track_to_flac(track, album, lyrics):
         "COMMENT": str(track['track_id']),
         "DATE": _format_date(track['release_ymd']),
         "GENRE": album['genre_str'],
-        "LABEL": "",
+        "LABEL": '; '.join(str(label['label_nm']) for label in album['list'][0]['album_info']['result']['labels']),
         "LYRICS": lyrics
     }
     return meta
