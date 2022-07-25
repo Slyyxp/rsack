@@ -4,7 +4,7 @@ from loguru import logger
 from urllib.parse import unquote
 from mutagen.flac import FLAC
 from rsack.clients import genie
-from rsack.utils import Settings, get_ext, sanitize
+from rsack.utils import Settings, format_genie_lyrics, get_ext, sanitize, format_genie_lyrics
 from concurrent.futures import ThreadPoolExecutor
 
 class Download:
@@ -87,6 +87,8 @@ class Download:
             self.album_path, f"{track_number}. {sanitize(unquote(meta['SONG_NAME']))}.{ext}")
         r = self.client.session.get(unquote(meta['STREAMING_MP3_URL']))
         r.raise_for_status()
+        # Retrieve lyrics
+        lyrics = format_genie_lyrics(self.client.get_timed_lyrics(id))
         if os.path.exists(file_path):
             logger.debug(f"{file_path} already exists.")
         else:
@@ -94,10 +96,10 @@ class Download:
                 for chunk in r.iter_content(32 * 1024):
                     if chunk:
                         f.write(chunk)
-            self._fix_tags(file_path, ext, track_number, disc_number,
+            self._fix_tags(file_path, lyrics, ext, track_number, disc_number,
                         track_artist, unquote(meta['SONG_NAME']))
 
-    def _fix_tags(self, path, ext, track_number, disc_number, track_artist, track_title):
+    def _fix_tags(self, path, lyrics, ext, track_number, disc_number, track_artist, track_title):
         if ext == "mp3":
             try:
                 audio = id3.ID3(path)
@@ -114,6 +116,8 @@ class Download:
             audio['TPUB'] = id3.TPUB(text=self.f_meta['planning'])
             audio['TPE1'] = id3.TPE1(text=unquote(track_artist))
             audio['TPE2'] = id3.TPE2(text=self.f_meta['album_artist'])
+            if lyrics != None:
+                audio['USLT'] = id3.USLT(text=lyrics)
             audio.save(path, "v2_version=3")
         else:
             audio = FLAC(path)
@@ -123,6 +127,8 @@ class Download:
             audio['LABEL'] = self.f_meta['planning']
             audio['ARTIST'] = unquote(track_artist)
             audio['ALBUMARTIST'] = self.f_meta['album_artist']
+            if lyrics != None:
+                audio['LYRICS'] = lyrics
             audio.save()
 
     def _download_cover(self, url):

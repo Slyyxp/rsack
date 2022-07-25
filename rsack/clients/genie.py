@@ -1,4 +1,5 @@
 import requests
+import json
 from loguru import logger
 
 class Client:
@@ -121,3 +122,11 @@ class Client:
         if r['Result']['RetCode'] == "S00001":
             logger.debug("This content is currently unavailable for service")
         return r['DataSet']['DATA'][0]
+    
+    def get_timed_lyrics(self, id: str):
+        r = self.session.get(f"https://dn.genie.co.kr/app/purchase/get_msl.asp?songid={id}&callback=GenieCallBack")
+        if r.content.decode('utf-8') == 'NOT FOUND LYRICS':
+            return None
+        # Remove unwanted characters
+        r = r.content.decode('utf-8')[14:-2]
+        return json.loads(r)

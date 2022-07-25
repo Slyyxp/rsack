@@ -218,3 +218,9 @@ def contribution_check(artist_id_provided, artist_id_api):
 		return False
 	else:
 		return True
+
+def format_genie_lyrics(lyrics: dict) -> str:
+    """Convert Genie dict to a usable str format for tagging"""
+    # Convert millisecond keys to format [00:00.00][minutes:seconds.milliseconds]
+    lines = [f"[{datetime.fromtimestamp(int(x)/1000).strftime('%M:%S.%f')[:-4]}]{lyrics[x]}" for x in lyrics]
+    return '\n'.join(lines)
