@@ -1,2 +1,2 @@
-# Package versino
-__version__ = "0.3.2"
+# Package version
+__version__ = "0.3.3"
