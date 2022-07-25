@@ -88,7 +88,9 @@ class Download:
         r = self.client.session.get(unquote(meta['STREAMING_MP3_URL']))
         r.raise_for_status()
         # Retrieve lyrics
-        lyrics = format_genie_lyrics(self.client.get_timed_lyrics(id))
+        if self.settings['timed_lyrics'] == 'Y':
+            lyrics = format_genie_lyrics(self.client.get_timed_lyrics(id))
+        else: lyrics = None
         if os.path.exists(file_path):
             logger.debug(f"{file_path} already exists.")
         else:

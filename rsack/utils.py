@@ -42,6 +42,7 @@ class Settings:
         genie_threads = input('How many Genie.co.kr download threads do you want to use?: (2-3 recommended)\n')
         genie_path = input('Enter your download path for Genie.co.kr:\n')
         genie_artist_folders = input('Utilize artist folders in Genie directory structure? (Y/N)')
+        genie_timed_lyrics = input('Use timed lyrics? (Y/N) [This requires an additional request per track]')
         
         # Qobuz Inputs
         qobuz_username = input(
@@ -66,7 +67,8 @@ class Settings:
                            'password': genie_password,
                            'threads': genie_threads,
                            'path': genie_path,
-                           'artist_folders': genie_artist_folders}
+                           'artist_folders': genie_artist_folders,
+                           'timed_lyrics': genie_timed_lyrics}
         config['Qobuz'] = {'username': qobuz_username,
                            'password': qobuz_password,
                            'path': qobuz_path,
