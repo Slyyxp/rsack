@@ -107,12 +107,15 @@ class Client:
             q = '24bit'
         data = {
             "bitrate": q,
+            "sign": "Y",
+            "mts": "Y",
             "dcd": self.dev_id,
             "stk": self.stm_token,
             "svc": "IV",
             "unm": self.usr_num,
             "uxtk": self.usr_token,
-            "xgnm": id
+            "xgnm": id,
+            "apvn": 40807
         }
         r = self.make_call("stm", "player/j_StmInfo.json", data)
         if r['Result']['RetCode'] == "A00003":
