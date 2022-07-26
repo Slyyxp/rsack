@@ -2,7 +2,7 @@ import json
 import requests
 
 from loguru import logger
-
+from rsack.exceptions import DeviceIDError
 class Client:
 
     def __init__(self):
@@ -122,7 +122,7 @@ class Client:
         }
         r = self.make_call("stm", "player/j_StmInfo.json", data)
         if r['Result']['RetCode'] == "A00003":
-            logger.critical("Device ID has changed since last stream resulting in playback error.")
+            raise DeviceIDError()
         if r['Result']['RetCode'] != "0":
             logger.critical("Failed to retrieve metadata")
         if r['Result']['RetCode'] == "S00001":
