@@ -32,6 +32,7 @@ class Download:
         for album in self.meta['DataSet']['DATA']:
             self._album(album['ALBUM_ID'])
 
+    @logger.catch
     def _album(self, id):
         """Iterate tracks in the album list
 
@@ -79,6 +80,7 @@ class Download:
             executor.map(self._track, tracks, track_numbers,
                          disc_numbers, track_artist)
 
+    @logger.catch
     def _track(self, id, track_number, disc_number, track_artist):
         meta = self.client.get_stream_meta(id, '24bit')
         logger.info(f"Track: {unquote(meta['SONG_NAME'])}")
@@ -101,6 +103,7 @@ class Download:
             self._fix_tags(file_path, lyrics, ext, track_number, disc_number,
                         track_artist, unquote(meta['SONG_NAME']))
 
+    @logger.catch
     def _fix_tags(self, path, lyrics, ext, track_number, disc_number, track_artist, track_title):
         if ext == "mp3":
             try:
