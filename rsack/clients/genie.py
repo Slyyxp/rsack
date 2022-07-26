@@ -1,5 +1,6 @@
-import requests
 import json
+import requests
+
 from loguru import logger
 
 class Client:
@@ -13,6 +14,8 @@ class Client:
             "Referer": "app.genie.co.kr"
         })
 
+        self.session.mount('https://', requests.adapters.HTTPAdapter(max_retries=3))
+        
     def make_call(self, sub, epoint, data):
         """
         :param sub: Url Prefix

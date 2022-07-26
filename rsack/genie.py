@@ -3,9 +3,11 @@ import mutagen.id3 as id3
 from loguru import logger
 from urllib.parse import unquote
 from mutagen.flac import FLAC
+from concurrent.futures import ThreadPoolExecutor
+
 from rsack.clients import genie
 from rsack.utils import Settings, format_genie_lyrics, get_ext, sanitize, format_genie_lyrics
-from concurrent.futures import ThreadPoolExecutor
+
 
 class Download:
     def __init__(self, type, id):
