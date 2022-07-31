@@ -4,6 +4,7 @@ from loguru import logger
 from urllib.parse import unquote
 from mutagen.flac import FLAC
 from concurrent.futures import ThreadPoolExecutor
+from requests.models import Response
 
 from rsack.clients import genie
 from rsack.utils import Settings, format_genie_lyrics, get_ext, sanitize, format_genie_lyrics
@@ -98,12 +99,24 @@ class Download:
         if os.path.exists(file_path):
             logger.debug(f"{file_path} already exists.")
         else:
-            with open(file_path, 'wb') as f:
-                for chunk in r.iter_content(32 * 1024):
-                    if chunk:
-                        f.write(chunk)
+            try:
+                self.write_track(file_path, r)
+            except OSError:
+                # OSError assumes excessive file length, rename file and continue writing
+                file_path = os.path.join(
+                    self.album_path, f"{track_number}.{ext}")
+                logger.debug(
+                    f"{track_number} has been renamed as it exceeded the maximum length.")
+                self.write_track(file_path, r)
             self._fix_tags(file_path, lyrics, ext, track_number, disc_number,
-                        track_artist, unquote(meta['SONG_NAME']))
+                           track_artist, unquote(meta['SONG_NAME']))
+
+    @staticmethod
+    def write_track(file_path: str, r: Response):
+        with open(file_path, 'wb') as f:
+            for chunk in r.iter_content(32 * 1024):
+                if chunk:
+                    f.write(chunk)
 
     @logger.catch
     def _fix_tags(self, path, lyrics, ext, track_number, disc_number, track_artist, track_title):
