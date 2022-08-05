@@ -19,12 +19,14 @@ python setup.py install
 - Artist batching
 - Extensive tagging
 - Concurrent downloads
+- Client utlizing undocumented mobile API.
 
 ## Genie
 - FLAC24, FLAC16, 320kbps
 - Artist batching
 - Extensive tagging
 - Concurrent downloads
+- Client utlizing undocumented mobile API.
 
 ## Qobuz
 - FLAC24, FLAC16
