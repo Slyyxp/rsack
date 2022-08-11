@@ -77,6 +77,7 @@ class Download:
         with ThreadPoolExecutor(max_workers=int(self.settings['threads'])) as executor:
             executor.map(self._download, album['tracks'])
 
+    @logger.catch
     def _download(self, track):
         """Downloads the track and passes it on for tagging
 
@@ -100,9 +101,15 @@ class Download:
         if r.status_code == 404:
             logger.info(f"{track['track_title']} unavailable, skipping.")
         else:
+            # If the response url is a redirect to the MP3 set quality to MP3
+            # svc_flac_yn can contain a false positive
+            if r.url.split("?")[0].endswith(".mp3"):
+                quality = 'mp3'
+            else:
+                quality = determine_quality(track['svc_flac_yn'])
             # Directory management
             file_path = os.path.join(
-                self.album_path, f"{track['track_no']}. {sanitize(track['track_title'])}.{determine_quality(track['svc_flac_yn'])}")
+                self.album_path, f"{track['track_no']}. {sanitize(track['track_title'])}.{quality}")
             with open(file_path, 'wb') as f:
                 for chunk in r.iter_content(32 * 1024):
                     if chunk:

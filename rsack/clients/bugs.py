@@ -15,7 +15,7 @@ class Client:
         self.username = username
         self.password = password
         data = {
-            "device_id": "gwAHWlkOYX_T8Sl43N78GiaD6Sg_",
+            "device_id": "gwAHWlkOYX_T8Sl43N78GiaD6Sg_", # Hardcode device id
             "passwd": password,
             "userid": username
         }
