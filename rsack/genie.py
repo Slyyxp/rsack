@@ -85,23 +85,24 @@ class Download:
         logger.info(f"Track: {unquote(meta['SONG_NAME'])}")
         ext = get_ext(meta['FILE_EXT'])
         file_path = os.path.join(self.album_path, f"{track_number}. {sanitize(unquote(meta['SONG_NAME']))}{ext}")
-        r = self.client.session.get(unquote(meta['STREAMING_MP3_URL']))
-        r.raise_for_status()
-        lyrics = self.client.get_timed_lyrics(id)
-        if self.settings['timed_lyrics'] == 'Y' and lyrics != None:
-            lyrics = format_genie_lyrics(lyrics)
         if os.path.exists(file_path):
             logger.debug(f"{file_path} already exists.")
         else:
-            try:
-                self._write_track(file_path, r)
-            except OSError:
-                # OSError assumes excessive file length, rename file and continue writing
-                file_path = os.path.join(self.album_path, f"{track_number}.{ext}")
-                logger.debug(f"{track_number} has been renamed as it exceeded the maximum length.")
-                self._write_track(file_path, r)
-            self._fix_tags(file_path, lyrics, ext, track_number, disc_number,
-                           track_artist, unquote(meta['SONG_NAME']))
+            r = self.client.session.get(unquote(meta['STREAMING_MP3_URL']))
+            r.raise_for_status()
+            lyrics = self.client.get_timed_lyrics(id)
+            if self.settings['timed_lyrics'] == 'Y' and lyrics != None:
+                lyrics = format_genie_lyrics(lyrics)
+            else:
+                try:
+                    self._write_track(file_path, r)
+                except OSError:
+                    # OSError assumes excessive file length, rename file and continue writing
+                    file_path = os.path.join(self.album_path, f"{track_number}.{ext}")
+                    logger.debug(f"{track_number} has been renamed as it exceeded the maximum length.")
+                    self._write_track(file_path, r)
+                self._fix_tags(file_path, lyrics, ext, track_number, disc_number,
+                            track_artist, unquote(meta['SONG_NAME']))
 
     @staticmethod
     def _write_track(file_path: str, r: Response):
