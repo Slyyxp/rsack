@@ -24,6 +24,7 @@ python setup.py install
 ## Genie
 - FLAC24, FLAC16, 320kbps
 - Artist batching
+- Timed lyrics
 - Extensive tagging
 - Concurrent downloads
 - Client utlizing undocumented mobile API.
