@@ -63,3 +63,22 @@ album = client.get_album(82525503) # Make call for album information using album
 artist = client.get_artist(80006273) # Make call for artist information using artist UID
 track = client.get_stream_meta(95970973) # Make call for stream information using track UID
 ```
+# FAQ
+### Why Are Downloads Slow?
+Servers for both Bugs and Genie are located in Korea, if you are outside of Asia downloads will likely be somewhat slow.
+
+## Bugs
+### Can I Download Music Videos?
+No you cannot, these files are not streamable.
+### Does Bugs Have Hi-Res?
+Bugs does not offer any 24bit files at the time of writing this.
+
+## Genie
+### Which Streaming Pass Do I Need?
+KT offer a 24bit package, beyond that i'm not sure.  
+https://product.kt.com/wDic/productDetail.do?ItemCode=1282
+
+### Why Do I Keep Getting DeviceID Error?
+This is caused by streaming tracks on a different device.  
+It will resolve itself within 5 minutes usually.  
+This was implemented by Genie to likely prevent account sharing.
