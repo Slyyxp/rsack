@@ -39,7 +39,7 @@ class Download:
         logger.info(
             f"{len(self.meta['list'][1]['artist_album']['list'])} releases found")
         for album in self.meta['list'][1]['artist_album']['list']:
-            contribution = contribution_check(id, album['artist_id'])
+            contribution = contribution_check(int(id), int(album['artist_id']))
             if contribution:
                 if self.settings['contributions'] == 'Y':
                     self._album(album)

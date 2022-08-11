@@ -41,7 +41,7 @@ def main():
                 type = "album"
             else: # Catch invalid info types
                 logger.critical("URL type unkown")
-            genie.Download(type=type, id=match.group(2))
+            genie.Download(type=type, id=int(match.group(2)))
     elif args.qobuz:
         for url in args.url:
             qobuz.Download(url)

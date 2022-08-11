@@ -6,7 +6,6 @@ from loguru import logger
 from getpass import getpass
 from configparser import ConfigParser
 
-
 class Settings:
     def __init__(self, check=False):
         self.ini_path = os.path.join(get_settings_path(), 'rsack_settings.ini')
@@ -76,26 +75,25 @@ class Settings:
         with open(self.ini_path, 'w+') as configfile:
             config.write(configfile)
 
-    def Bugs(self):
+    def Bugs(self) -> dict:
         """
         Returns the contents of the 'Bugs' section of settings.ini as dict.
         """
         return dict(self.config.items('Bugs'))
 
-    def Genie(self):
+    def Genie(self) -> dict:
         """
         Returns the contents of the 'Genie' section of settings.ini as dict.
         """
         return dict(self.config.items('Genie'))
     
-    def Qobuz(self):
+    def Qobuz(self) -> dict:
         """
         Returns the contents of the 'Qobuz' section of settings.ini as dict.
         """
         return dict(self.config.items('Qobuz'))
 
-
-def track_to_flac(track, album, lyrics):
+def track_to_flac(track: dict, album: dict, lyrics: str) -> dict:
     """Creates dict with appropriate FLAC headers.
 
     Args:
@@ -120,10 +118,9 @@ def track_to_flac(track, album, lyrics):
     }
     return meta
 
-
 def _format_date(date):
-    # Bugs sometimes does not include the day on the release date for older albums released on the first day of the month.
-    # We will append it manuallly before date transformation.
+    """Formats album release date to preferred format"""
+    # Append release day if not present.
     if len(date) == 6:
         date = date + "01"
     date_patterns = ["%Y%m%d", "%Y%m", "%Y"]
@@ -133,34 +130,30 @@ def _format_date(date):
         except ValueError:
             pass
 
-
-def determine_quality(svc_flac_yn):
+def determine_quality(svc_flac_yn: str) -> str:
     if svc_flac_yn == 'Y':
         return 'flac'
     else:
         return 'mp3'
 
-def bugs_id(url):
-	return match(
-		r'https?://music\.bugs\.co\.kr/(?:(?:album|artist|track|playlist)/|[a-z]{2}-[a-z]{2}-?\w+(?:-\w+)*-?)(\w+)',
-		url).group(1)
+def bugs_id(url: str) -> str:
+    return match(
+        r'https?://music\.bugs\.co\.kr/(?:(?:album|artist|track|playlist)/|[a-z]{2}-[a-z]{2}-?\w+(?:-\w+)*-?)(\w+)',url).group(1)
 
-def genie_id(url):
-	"""
-	:param url: Genie url
-	:return: Album ID
-	"""
-	expression = r"https://genie.co.kr/detail/(artistInfo|albumInfo)......([0-9]*)"
-	result = match(expression, url)
-	# This shouldn't be needed, regex needs to be fixed.
-	if not result:
-		expression = r"https://www.genie.co.kr/detail/(artistInfo|albumInfo)......([0-9]*)"
-		result = match(expression, url)
-	if result:
-		return result
-	logger.critical("Invalid URL: {}".format(url))
+def genie_id(url: str) -> match:
+    expression = r"https://genie.co.kr/detail/(artistInfo|albumInfo)......([0-9]*)"
+    result = match(expression, url)
+    # This shouldn't be needed, regex needs to be fixed.
+    if not result:
+        expression = r"https://www.genie.co.kr/detail/(artistInfo|albumInfo)......([0-9]*)"
+        result = match(expression, url)
+    if result:
+        return result
+    
+    logger.critical("Invalid URL: {}".format(url))
  
-def get_settings_path():
+def get_settings_path() -> str:
+    """Returns path of home folder to store settings.ini"""
     if "XDG_CONFIG_HOME" in os.environ:
         return os.environ['XDG_CONFIG_HOME']
     elif "HOME" in os.environ:
@@ -170,56 +163,53 @@ def get_settings_path():
     else:
         return os.path._getfullpathname("./")
 
-def get_ext(type):
-    """Returns file extension
+def get_ext(type: str) -> str:
+    """Return the filetype.
 
     Args:
-        type (str): FILE_EXT from API response
-
+        type (str): "FILE_EXT" from player/j_StmInfo.json response
+            Known FILE_EXT's:
+                        F96: FLAC 24bit/96kHz
+                        F44: FLAC 24bit/44.1kHz
+                        FLA: FLAC 16bit
+                        MP3: MP3
+                        
     Returns:
-        [str]: file extension string
+        str: File extension
     """
     if type == "MP3":
-        return "mp3"
+        return ".mp3"
     else:
-        return "flac"
+        return ".flac"
 
-def insert_total_tracks(tracks):
-    """Add total_tracks to track metadata
-
-    Args:
-        tracks (list): list of dicts containing track metadata
-    """
+def insert_total_tracks(tracks: list[dict]):
+    """Add total_tracks to track metadata"""
     total_tracks_by_disc_id = {}
     for track in tracks:
         if track["disc_id"] not in total_tracks_by_disc_id:
             total_tracks_by_disc_id[track["disc_id"]] = 0
-
         total_tracks_by_disc_id[track["disc_id"]] += 1
 
     for track in tracks:
         track["track_total"] = total_tracks_by_disc_id[track["disc_id"]]
 
-def _is_win():
+def _is_win() -> bool:
 	if system() == 'Windows':
 		return True
 
-def sanitize(fn):
-	"""
-	:param fn: Filename
-	:return: Sanitized string
-	Removes invalid characters in the filename dependant on Operating System.
-	"""
-	if _is_win():
-		return sub(r'[\/:*?"><|]', '_', fn).strip()
-	else:
-		return sub('/', '_', fn).strip()
+def sanitize(fn: str) -> str:
+    """Sanitizes filenames based on Operating System"""
+    if _is_win():
+        return sub(r'[\/:*?"><|]', '_', fn).strip()
+    else:
+        return sub('/', '_', fn).strip()
 
-def contribution_check(artist_id_provided, artist_id_api):
-	if int(artist_id_provided) == int(artist_id_api):
-		return False
-	else:
-		return True
+def contribution_check(artist_id_provided: int, artist_id_api: int) -> bool:
+    """Checks if artist is contributing"""
+    if artist_id_provided == artist_id_api:
+        return False
+    else:
+        return True
 
 def format_genie_lyrics(lyrics: dict) -> str:
     """Convert Genie dict to a usable str format for tagging"""

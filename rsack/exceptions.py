@@ -1,6 +1,6 @@
 class DeviceIDError():
-    def __init__(self):
-        message = "Device ID has been changed since last stream resulting in playback error."
-    
-    def __str__(self):
+    def __init__(self, message: str):
+        self.message = message
+
+    def __str__(self) -> str:
         return self.message

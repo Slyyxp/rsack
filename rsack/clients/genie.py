@@ -3,8 +3,8 @@ import requests
 
 from loguru import logger
 from rsack.exceptions import DeviceIDError
-class Client:
 
+class Client:
     def __init__(self):
         self.session = requests.Session()
         self.dev_id = "eb9d53a3c424f961"
@@ -16,26 +16,29 @@ class Client:
 
         self.session.mount('https://', requests.adapters.HTTPAdapter(max_retries=3))
         
-    def make_call(self, sub, epoint, data):
-        """
-        :param sub: Url Prefix
-        :param epoint: Endpoint
-        :param data: Post data
-        :return: API Response
-        Endpoints used:
-                player/j_StmInfo.json - Provides information on the streamed track.
-                member/j_Member_Login.json - Authentication.
-                song/j_AlbumSongList.json - Provides album information.
-        """
-        r = self.session.post(
-            "https://{}.genie.co.kr/{}".format(sub, epoint), data=data)
-        r.raise_for_status()
+    def make_call(self, sub: str, epoint: str, data: dict) -> dict:
+        """Makes API call to specified endpoint
 
+        Args:
+            sub (str): Subdomain
+            epoint (str): Endpoint
+            data (dict): POST data
+        
+        Endpoints used:
+            player/j_StmInfo.json: Returns track information
+            member/j_Member_Login.json: Authentication.
+            song/j_AlbumSongList.json: Returns album information
+
+        Returns:
+            dict: JSON Response
+        """
+        r = self.session.post("https://{}.genie.co.kr/{}".format(sub, epoint), data=data)
+        r.raise_for_status()
         return r.json()
 
-    def auth(self, username, password):
+    def auth(self, username: str, password: str):
         """
-        Authenticate our session appearing as an Android device
+        Authenticate session
         """
         data = {
             "uxd": username,
@@ -50,11 +53,8 @@ class Client:
         self.usr_token = r['DATA0']['MemToken']
         self.stm_token = r['DATA0']['STM_TOKEN']
 
-    def get_album(self, id):
-        """
-        :param id: Album ID.
-        :return: API Response containing album metadata.
-        """
+    def get_album(self, id: int) -> dict:
+        """Retrieve album information"""
         data = {
             "axnm": id,
             "dcd": self.dev_id,
@@ -70,15 +70,8 @@ class Client:
             logger.critical("Failed to retrieve metadata")
         return r
     
-    def get_artist(self, id):
-        """Returns artist information
-
-        Args:
-            id (int): Artist UID
-
-        Returns:
-            [dict]: API Response containing artist information
-        """
+    def get_artist(self, id: int) -> dict:
+        """Retrieve artist information"""
         data = {
             "uxtk": self.usr_token,
             "sign": "Y",
@@ -96,20 +89,21 @@ class Client:
             logger.critical("Failed to retrieve metadata")
         return r
 
-    def get_stream_meta(self, id, q=None):
+    def get_stream_meta(self, id: int) -> dict:
+        """Retrieves information on a streamable track
+
+        Args:
+            id (int): Unique ID of track
+
+        Raises:
+            DeviceIDError: Raises when RetCode "A00003" is returned.
+                        Caused by sudden change in DeviceID.
+                              
+        Returns:
+            dict: JSON Response
         """
-        :param id: Album ID
-        :param q: Album quality.
-        :return: API Response containing metadata for the currently streamed track.
-        Quality options:
-                1 - MP3
-                2 - 16bit FLAC
-                3 - 24bit FLAC
-        """
-        if q is None:
-            q = '24bit'
         data = {
-            "bitrate": q,
+            "bitrate": "24bit",
             "sign": "Y",
             "mts": "Y",
             "dcd": self.dev_id,
@@ -122,14 +116,15 @@ class Client:
         }
         r = self.make_call("stm", "player/j_StmInfo.json", data)
         if r['Result']['RetCode'] == "A00003":
-            raise DeviceIDError()
+            raise DeviceIDError("Device ID has been changed since last stream.")
         if r['Result']['RetCode'] != "0":
             logger.critical("Failed to retrieve metadata")
         if r['Result']['RetCode'] == "S00001":
             logger.debug("This content is currently unavailable for service")
         return r['DataSet']['DATA'][0]
     
-    def get_timed_lyrics(self, id: str):
+    def get_timed_lyrics(self, id: str) -> dict:
+        """Retrieve the timed lyrics for a track"""
         r = self.session.get(f"https://dn.genie.co.kr/app/purchase/get_msl.asp?songid={id}&callback=GenieCallBack")
         if r.content.decode('utf-8') == 'NOT FOUND LYRICS':
             return None
