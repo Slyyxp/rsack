@@ -28,9 +28,6 @@ class Client:
         self.connection_info = r['result']['coninfo']
         return self.connection_info
 
-    def get_api_key(self):
-        return self.api_key
-
     def make_call(self, sub, epoint, data=None, json=None, params=None):
         r = self.session.post("https://{}.bugs.co.kr/{}api_key={}".format(sub, epoint, self.api_key), json=json, data=data, params=params)
         return r.json()
