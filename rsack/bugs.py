@@ -51,29 +51,39 @@ class Download:
         Args:
             album (dict): API response containing album information
         """
-        self.album = album
-        logger.info(f"Album: {album['title']}")
+        self.album = album # Assign to self from here on as it'll be referenced often across the class.
+        logger.info(f"Album: {self.album['title']}")
         # Acquire disc total
-        album['disc_total'] = album['tracks'][-1]['disc_id']
+        self.album['disc_total'] = self.album['tracks'][-1]['disc_id']
         # Add track_total to meta.
-        insert_total_tracks(album['tracks'])
-        # Construct album path
-        if self.settings['artist_folders'].upper() == 'Y':
-            self.album_path = os.path.join(
-                self.settings['path'], sanitize(album['artist_disp_nm']), f"{sanitize(album['artist_disp_nm'])} - {sanitize(album['title'])}")
-        else:
-            self.album_path = os.path.join(
-                self.settings['path'], f"{sanitize(album['artist_disp_nm'])} - {sanitize(album['title'])}")
-        if not os.path.exists(self.album_path):
-            logger.debug(f"Creating {self.album_path}")
-            os.makedirs(self.album_path)
-        else:
-            pass
-        self._download_cover(self.album_path)
+        insert_total_tracks(self.album['tracks'])
+        self._album_path()
+        self._download_cover()
         # Begin downloading tracks
         logger.info(f"Threads: {self.settings['threads']}")
         with ThreadPoolExecutor(max_workers=int(self.settings['threads'])) as executor:
-            executor.map(self._download, album['tracks'])
+            executor.map(self._download, self.album['tracks'])
+    
+    @logger.catch
+    def _album_path(self):
+        if self.settings['artist_folders'].upper() == 'Y':
+            self.album_path = os.path.join(
+                self.settings['path'], sanitize(self.album['artist_disp_nm']), f"{sanitize(self.album['artist_disp_nm'])} - {sanitize(self.album['title'])}")
+        else:
+            self.album_path = os.path.join(
+                self.settings['path'], f"{sanitize(self.album['artist_disp_nm'])} - {sanitize(self.album['title'])}")
+        if not os.path.exists(self.album_path):
+            logger.debug(f"Creating {self.album_path}")
+            os.makedirs(self.album_path)
+        # Create nested disc folders
+        if self.album['disc_total'] > 1:
+            self.discs = True
+            for i in range(self.album['disc_total']):
+                d = os.path.join(self.album_path, f"Disc {str(i + 1)}")
+                if not os.path.exists(d):
+                    os.makedirs(d)
+        else: 
+            self.discs = False
 
     @logger.catch
     def _download(self, track: dict):
@@ -101,7 +111,10 @@ class Download:
                 quality = 'mp3'
             else:
                 quality = determine_quality(track['svc_flac_yn'])
-            file_path = os.path.join(self.album_path, f"{track['track_no']}. {sanitize(track['track_title'])}.{quality}")
+            if self.discs:
+                file_path = os.path.join(self.album_path, f"Disc {str(track['disc_id'])}", f"{track['track_no']}. {sanitize(track['track_title'])}.{quality}")
+            else:
+                file_path = os.path.join(self.album_path, f"{track['track_no']}. {sanitize(track['track_title'])}.{quality}")
             with open(file_path, 'wb') as f:
                 for chunk in r.iter_content(32 * 1024):
                     if chunk:
@@ -109,13 +122,9 @@ class Download:
             self._tag(track, file_path)
             logger.info(f"{track['track_title']} downloaded and tagged")
 
-    def _download_cover(self, path: str):
-        """Downloads cover artwork
-
-        Args:
-            path (str): Write path
-        """
-        self.cover_path = os.path.join(path, 'cover.jpg')
+    def _download_cover(self):
+        """Downloads cover artwork"""
+        self.cover_path = os.path.join(self.album_path, 'cover.jpg')
         if os.path.exists(self.cover_path):
             logger.info('Cover already exists, skipping.')
         else:
