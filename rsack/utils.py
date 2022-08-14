@@ -130,12 +130,6 @@ def _format_date(date):
         except ValueError:
             pass
 
-def determine_quality(svc_flac_yn: str) -> str:
-    if svc_flac_yn == 'Y':
-        return 'flac'
-    else:
-        return 'mp3'
-
 def bugs_id(url: str) -> str:
     return match(
         r'https?://music\.bugs\.co\.kr/(?:(?:album|artist|track|playlist)/|[a-z]{2}-[a-z]{2}-?\w+(?:-\w+)*-?)(\w+)',url).group(1)

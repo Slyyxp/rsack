@@ -8,7 +8,7 @@ from mutagen.id3 import ID3NoHeaderError
 from concurrent.futures import ThreadPoolExecutor
 
 from rsack.clients import bugs
-from rsack.utils import Settings, track_to_flac, determine_quality, insert_total_tracks, contribution_check, sanitize
+from rsack.utils import Settings, track_to_flac, insert_total_tracks, contribution_check, sanitize
 
 
 class Download:
@@ -92,48 +92,80 @@ class Download:
         Args:
             track (dict): Contains track information from API response
         """
-        track_id = track['track_id']
-        logger.debug(f"Processing: {track_id}")
-        # Create params required to request the track
-        params = {
-            "ConnectionInfo": self.conn_info,
-            "api_key": self.client.api_key,
-            "overwrite_session": "Y",
-            "track_id": track_id
-        }
-        r = requests.get(f"http://api.bugs.co.kr/3/tracks/{track_id}/listen/android/flac", params=params, stream=True)
-        if r.status_code == 404:
-            logger.info(f"{track['track_title']} unavailable, skipping.")
+        logger.info(f"Track: {track['track_title']}")
+        if self.discs:
+            file_path = os.path.join(self.album_path, f"Disc {str(track['disc_id'])}", f"{track['track_no']}. {sanitize(track['track_title'])}.temp")
         else:
-            # If the response url is a redirect to the MP3 set quality to MP3
-            # svc_flac_yn can contain a false positive
-            if r.url.split("?")[0].endswith(".mp3"):
-                quality = 'mp3'
+            file_path = os.path.join(self.album_path, f"{track['track_no']}. {sanitize(track['track_title'])}.temp")
+        if self._exist_check(file_path):
+            logger.info(f"{track['track_title']} already exists")
+        else:
+            # Create params required to request the track
+            params = {
+                "ConnectionInfo": self.conn_info,
+                "api_key": self.client.api_key,
+                "overwrite_session": "Y",
+                "track_id": track['track_id']
+            }
+            # Create headers for byte position.
+            headers = {
+                "Range": 'bytes=%d-' % self._return_bytes(file_path),
+            }
+            r = requests.get(f"http://api.bugs.co.kr/3/tracks/{track['track_id']}/listen/android/flac", headers=headers, params=params, stream=True)
+            if r.url.split("?")[0].endswith(".mp3"): # If response redirects to MP3 file set quality to .mp3
+                quality = '.mp3'
+            else: # Otherwise .flac
+                quality = '.flac'
+            if r.status_code == 404:
+                logger.info(f"{track['track_title']} unavailable")
             else:
-                quality = determine_quality(track['svc_flac_yn'])
-            if self.discs:
-                file_path = os.path.join(self.album_path, f"Disc {str(track['disc_id'])}", f"{track['track_no']}. {sanitize(track['track_title'])}.{quality}")
-            else:
-                file_path = os.path.join(self.album_path, f"{track['track_no']}. {sanitize(track['track_title'])}.{quality}")
-            with open(file_path, 'wb') as f:
-                for chunk in r.iter_content(32 * 1024):
-                    if chunk:
-                        f.write(chunk)
-            self._tag(track, file_path)
-            logger.info(f"{track['track_title']} downloaded and tagged")
+                with open(file_path, 'ab') as f:
+                    for chunk in r.iter_content(32 * 1024):
+                        if chunk:
+                            f.write(chunk)
+                c_path = file_path.replace(".temp", quality)
+                os.rename(file_path, c_path)
+                self._tag(track, c_path)
 
+    @staticmethod
+    def _return_bytes(file_path: str) -> int:
+        """Returns number of bytes in file
+
+        Args:
+            file_path (str): File path
+
+        Returns:
+            int: Returns size in bytes
+        """
+        
+        if os.path.exists(file_path):
+            logger.debug(f"Existing .temp file {os.path.basename(file_path)} has resumed.")
+            return os.path.getsize(file_path)
+        else:
+            return 0
+    
+    @staticmethod
+    def _exist_check(file_path: str) -> bool:
+        if os.path.exists(file_path.replace('.temp', '.mp3')):
+            return True
+        if os.path.exists(file_path.replace('.temp', '.flac')):
+            return True
+        else:
+            return False
+    
     def _download_cover(self):
         """Downloads cover artwork"""
         self.cover_path = os.path.join(self.album_path, 'cover.jpg')
         if os.path.exists(self.cover_path):
-            logger.info('Cover already exists, skipping.')
+            logger.info('Cover already exists')
         else:
             r = requests.get(self.album['img_urls']['500'])
             r.raise_for_status
             with open(self.cover_path, 'wb') as f:
                 f.write(r.content)
             logger.info('Cover artwork downloaded.')
-            
+    
+    @logger.catch
     def _tag(self, track: dict, file_path: str):
         """Append ID3/FLAC tags
 
