@@ -238,7 +238,7 @@ class Download:
             str: Formatted lyrics
         """
         # If user prefers timed then retrieve timed lyrics
-        if lyrics_tp and self.settings['lyrics'] == 'T':
+        if lyrics_tp == 'T' and self.settings['lyrics'] == 'T':
             # Retrieve timed lyrics
             r = requests.get(f"https://music.bugs.co.kr/player/lyrics/T/{track_id}")
             # Format timed lyrics
@@ -247,7 +247,7 @@ class Download:
             lyrics = ("\n".join(
                 f'[{datetime.fromtimestamp(round(float(a), 2)).strftime("%M:%S.%f")[0:-4]}]{b}' for a, b in line_split))
         # If user prefers untimed or timed unavailable then use untimed
-        elif 'lyrics_tp' == 'N' or self.settings['lyrics'] == 'N':
+        elif lyrics_tp == 'N' or self.settings['lyrics'] == 'N':
             r = requests.get(f'https://music.bugs.co.kr/player/lyrics/N/{track_id}')
             lyrics = r.json()['lyrics']
             # If unavailable leave as empty string
