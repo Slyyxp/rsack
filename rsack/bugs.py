@@ -66,6 +66,7 @@ class Download:
     
     @logger.catch
     def _album_path(self):
+        """Creates necessary directories"""
         if self.settings['artist_folders'].upper() == 'Y':
             self.album_path = os.path.join(
                 self.settings['path'], sanitize(self.album['artist_disp_nm']), f"{sanitize(self.album['artist_disp_nm'])} - {sanitize(self.album['title'])}")
@@ -146,6 +147,14 @@ class Download:
     
     @staticmethod
     def _exist_check(file_path: str) -> bool:
+        """Check if file exists for both possible cases
+
+        Args:
+            file_path (str): .temp file path
+
+        Returns:
+            bool: True if exists else false
+        """
         if os.path.exists(file_path.replace('.temp', '.mp3')):
             return True
         if os.path.exists(file_path.replace('.temp', '.flac')):
