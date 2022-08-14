@@ -11,7 +11,8 @@ class Client:
             "Host": "api.bugs.co.kr",
         })
  
-    def auth(self, username, password):
+    def auth(self, username: str, password: str):
+        """Authenticates session"""
         self.username = username
         self.password = password
         data = {
@@ -28,12 +29,36 @@ class Client:
         self.connection_info = r['result']['coninfo']
         return self.connection_info
 
-    def make_call(self, sub, epoint, data=None, json=None, params=None):
+    def make_call(self, sub: str, epoint: str, data: dict = None, json: dict = None, params: dict = None):
+        """Makes an API call
+
+        Args:
+            sub (str): Subdomain
+            epoint (str): Endpoint
+            data (dict, optional): POST data. Defaults to None.
+            json (dict, optional): POST json. Defaults to None.
+            params (dict, optional): POST parameters. Defaults to None.
+
+        Returns:
+            dict: Response
+        """
         r = self.session.post("https://{}.bugs.co.kr/{}api_key={}".format(sub, epoint, self.api_key), json=json, data=data, params=params)
         return r.json()
 
     @logger.catch
-    def get_meta(self, type, id):
+    def get_meta(self, type: str, id: int) -> dict:
+        """Retrieves metadata
+
+        Args:
+            type (str): Information type. (artist/album/track)
+            id (int): Unique ID
+
+        Raises:
+            logger.critical: Raised when JSON contains invalid data. Usually the ID passed.
+
+        Returns:
+            dict: Response
+        """
         if type == "album":
             json=[{"id":"album_info","args":{"albumId":id}}, {"id":"artist_role_info","args":{"contentsId":id,"type":"ALBUM"}}]
         elif type == "artist":
