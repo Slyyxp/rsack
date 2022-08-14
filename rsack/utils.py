@@ -103,7 +103,7 @@ def track_to_flac(track: dict, album: dict, lyrics: str) -> dict:
     """
     meta = {
         "ALBUM": track['album_title'],
-        "ALBUMARTIST": track['artist_disp_nm'],
+        "ALBUMARTIST": album['artist_disp_nm'],
         "ARTIST": track['artist_disp_nm'],
         "TITLE": track['track_title'],
         "DISCNUMBER": str(track['disc_id']),
