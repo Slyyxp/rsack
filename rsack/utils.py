@@ -42,17 +42,7 @@ class Settings:
         genie_path = input('Enter your download path for Genie.co.kr:\n')
         genie_artist_folders = input('Utilize artist folders in Genie directory structure? (Y/N)')
         genie_timed_lyrics = input('Use timed lyrics? (Y/N) [This requires an additional request per track]')
-        
-        # Qobuz Inputs
-        qobuz_username = input(
-            'Please enter your Qobuz email: (If none leave blank)\n'
-        )
-        qobuz_password = getpass(
-            'Please enter your Qobuz password: (If none leave blank)\n'
-        )
-        qobuz_path = input('Enter your download path for Qobuz: \n')
-        qobuz_quality = input('Qobuz quality: (5: MP3, 6: 16bit 44.1kHz, 7: 24bit <96kHz, 27: 24bit >96kHz\n')
-        
+
         # Write file
         config = ConfigParser()
         config['Bugs'] = {'username': bugs_username,
@@ -68,10 +58,6 @@ class Settings:
                            'path': genie_path,
                            'artist_folders': genie_artist_folders,
                            'timed_lyrics': genie_timed_lyrics}
-        config['Qobuz'] = {'username': qobuz_username,
-                           'password': qobuz_password,
-                           'path': qobuz_path,
-                           'quality': qobuz_quality}
         with open(self.ini_path, 'w+') as configfile:
             config.write(configfile)
 
@@ -86,12 +72,7 @@ class Settings:
         Returns the contents of the 'Genie' section of settings.ini as dict.
         """
         return dict(self.config.items('Genie'))
-    
-    def Qobuz(self) -> dict:
-        """
-        Returns the contents of the 'Qobuz' section of settings.ini as dict.
-        """
-        return dict(self.config.items('Qobuz'))
+
 
 def track_to_flac(track: dict, album: dict, lyrics: str) -> dict:
     """Creates dict with appropriate FLAC headers.
