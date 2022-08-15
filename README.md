@@ -31,11 +31,6 @@ python setup.py install
 - 동시 다중 다운로드
 - 문서화되지 않은 모바일 API를 활용하는 클라이언트
 
-## Qobuz
-- FLAC24, FLAC16
-- 특정 아티스트의 음원 일괄 다운로드
-- 추후 변경사항이 있을때까지는 [vikito98](https://github.com/vitiko98)의 [qobuz_dl](https://github.com/vitiko98/qobuz-dl)에 의존
-
 # rsack_settings.ini
 `rsack_settings.ini` 파일은 여러분이 지정한 폴더에 위치할 수 있습니다
 
