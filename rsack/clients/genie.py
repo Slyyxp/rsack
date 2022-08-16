@@ -70,8 +70,8 @@ class Client:
             logger.critical("Failed to retrieve metadata")
         return r
     
-    def get_artist(self, id: int) -> dict:
-        """Retrieve artist information"""
+    def get_artist_albums(self, id: int) -> dict:
+        """Retrieve artists album information"""
         data = {
             "uxtk": self.usr_token,
             "sign": "Y",
@@ -89,6 +89,24 @@ class Client:
             logger.critical("Failed to retrieve metadata")
         return r
 
+    def get_artist(self, id: int) -> dict:
+        """Retrieves artist information"""
+        data = {
+            "uxtk": self.usr_token,
+            "sign": "Y",
+            "tct": "Android",
+            "svc": "IV",
+            "stk": self.stm_token,
+            "dcd": self.dev_id,
+            "xxnm": id,
+            "unm": self.usr_num,
+            "mts": "Y"
+        }
+        r = self.make_call("info", "info/artist", data)
+        if r['result']['ret_code'] != "0":
+            logger.critical("Failed to retrieve metadata")
+        return r
+        
     def get_stream_meta(self, id: int) -> dict:
         """Retrieves information on a streamable track
 

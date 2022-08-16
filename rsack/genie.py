@@ -169,6 +169,6 @@ class Download:
     def _collect(self, type: str, id: int):
         """Returns metadata for specified release"""
         if type == 'artist':
-            return self.client.get_artist(id)
+            return self.client.get_artist_albums(id)
         if type == 'album':
             return self.client.get_album(id)
