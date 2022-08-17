@@ -31,7 +31,7 @@ class Settings:
             'Please enter your Bugs.co.kr password: (If none leave blank)\n')
         bugs_threads = input('How many Bugs.co.kr download threads do you want to use?: (2-3 recommended)\n')
         bugs_path = input('Enter your download path for Bugs.co.kr:\n')
-        bugs_artist_folders = input('Utilize artist folders in Bugs directory structure? (Y/N)')
+        bugs_artist_folders = input('Utilize artist folders in Bugs directory structure? (Y/N)\n')
         bugs_lyrics = input('Enter your preferred Bugs.co.kr lyrics type: (T = Timed, N = Normal)\n')
         bugs_contributions = input('Include contributions in artist batches?: (Y/N)\n')
         
@@ -42,8 +42,9 @@ class Settings:
             'Please enter your Genie.co.kr password: (If none leave blank)\n')
         genie_threads = input('How many Genie.co.kr download threads do you want to use?: (2-3 recommended)\n')
         genie_path = input('Enter your download path for Genie.co.kr:\n')
-        genie_artist_folders = input('Utilize artist folders in Genie directory structure? (Y/N)')
-        genie_timed_lyrics = input('Use timed lyrics? (Y/N) [This requires an additional request per track]')
+        genie_artist_folders = input('Utilize artist folders in Genie directory structure? (Y/N)\n')
+        genie_timed_lyrics = input('Use timed lyrics? (Y/N) [This requires an additional request per track]\n')
+        genie_contributions = input('Include contributions in artist batches?: (Y/N)\n')
 
         # Write file
         config = ConfigParser()
@@ -59,7 +60,8 @@ class Settings:
                            'threads': genie_threads,
                            'path': genie_path,
                            'artist_folders': genie_artist_folders,
-                           'timed_lyrics': genie_timed_lyrics}
+                           'timed_lyrics': genie_timed_lyrics,
+                           'contributions': genie_contributions}
         with open(self.ini_path, 'w+') as configfile:
             config.write(configfile)
 

@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from requests.models import Response
 
 from rsack.clients import genie
-from rsack.utils import Settings, format_genie_lyrics, get_ext, sanitize
+from rsack.utils import Settings, contribution_check, format_genie_lyrics, get_ext, sanitize
 
 
 class Download:
@@ -26,8 +26,14 @@ class Download:
         """Iterate albums in artist"""
         meta = self.client.get_artist_albums(id)
         for album in meta['DataSet']['DATA']:
-            if 
-            self._album(album['ALBUM_ID'])
+            if contribution_check(id, int(album['ARTIST_ID'])):
+                if self.settings['contributions'] == "Y":
+                    self._album(album['ALBUM_ID'])
+                else:
+                    logger.debug("Skipping contribution")
+            else:
+                self._album(album['ALBUM_ID'])
+
 
     @logger.catch
     def _album(self, id: int):
