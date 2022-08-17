@@ -46,9 +46,9 @@ from rsack.clients import bugs
 client = bugs.Client() # 클라이언트 오브젝트 초기화
 client.auth(username='', password='') # 음원 사이트 계정 인증
 
-artist_response = client.get_meta(type='artist', id=80219706) # 아티스트 UID를 사용해서 아티스트 정보를 가져옴
-album_response = client.get_meta(type='album', id=4071297) # 앨범 UID를 사용해서 앨범 정보를 가져옴
-track_response = client.get_meta(type='track', id=6147328) # 트랙 UID를 사용해서 트랙 정보를 가져옴
+artist_response = client.get_artist(id=80219706) # 아티스트 UID를 사용해서 아티스트 정보를 가져옴
+album_response = client.get_album(id=4071297) # 앨범 UID를 사용해서 앨범 정보를 가져옴
+track_response = client.get_track(id=6147328) # 트랙 UID를 사용해서 트랙 정보를 가져옴
 ```
 ```python
 from rsack.clients import genie
