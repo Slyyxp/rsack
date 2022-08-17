@@ -32,8 +32,11 @@ class Client:
         Returns:
             dict: JSON Response
         """
-        r = self.session.post("https://{}.genie.co.kr/{}".format(sub, epoint), data=data)
-        r.raise_for_status()
+        try:
+            r = self.session.post("https://{}.genie.co.kr/{}".format(sub, epoint), data=data)
+        except requests.exceptions.ConnectionError:
+            logger.debug("Remote end closed connection, retrying.")
+            r = self.session.post("https://{}.genie.co.kr/{}".format(sub, epoint), data=data)
         return r.json()
 
     def auth(self, username: str, password: str):
