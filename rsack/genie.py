@@ -16,16 +16,16 @@ class Download:
         self.settings = Settings().Genie()
         self.client = genie.Client()
         self.client.auth(username=self.settings['username'], password=self.settings['password'])
-        self.meta = self._collect(type, id)
         logger.info(f"Threads: {self.settings['threads']}")
         if type == "artist":
-            self._artist()
+            self._artist(id)
         elif type == "album":
             self._album(id)
 
-    def _artist(self):
+    def _artist(self, id: int):
         """Iterate albums in artist"""
-        for album in self.meta['DataSet']['DATA']:
+        meta = self.client.get_artist_albums(id)
+        for album in meta['DataSet']['DATA']:
             self._album(album['ALBUM_ID'])
 
     @logger.catch
@@ -166,10 +166,3 @@ class Download:
                 f.write(r.content)
         else:
             logger.debug(f"{path} already exists.")
-
-    def _collect(self, type: str, id: int):
-        """Returns metadata for specified release"""
-        if type == 'artist':
-            return self.client.get_artist_albums(id)
-        if type == 'album':
-            return self.client.get_album(id)
