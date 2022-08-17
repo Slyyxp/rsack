@@ -2,6 +2,8 @@
 import requests
 from loguru import logger
 
+from rsack.exceptions import InvokeMapError
+
 class Client:
     def __init__(self):
         self.session = requests.Session()
@@ -45,29 +47,77 @@ class Client:
         r = self.session.post("https://{}.bugs.co.kr/{}api_key={}".format(sub, epoint, self.api_key), json=json, data=data, params=params)
         return r.json()
 
-    @logger.catch
-    def get_meta(self, type: str, id: int) -> dict:
-        """Retrieves metadata
+    def get_artist(self, id: int) -> dict:
+        """Retrieves artist information
 
         Args:
-            type (str): Information type. (artist/album/track)
-            id (int): Unique ID
+            id (int): Artists unique id
 
         Raises:
-            logger.critical: Raised when JSON contains invalid data. Usually the ID passed.
+            InvokeMapError: Failed to invoke map
 
         Returns:
-            dict: Response
+            dict: API response
         """
-        if type == "album":
-            json=[{"id":"album_info","args":{"albumId":id}}, {"id":"artist_role_info","args":{"contentsId":id,"type":"ALBUM"}}]
-        elif type == "artist":
-            json=[{"id":"artist_info","args":{"artistId":id}}, {"id":"artist_album","args":{"artistId":id, "albumType":"main","tracksYn":"Y","page":1,"size":500}}]
-        elif type == "track":
-            json=[{"id":"track_detail", "args":{"trackId":id}}]
-        else:
-            logger.critical("Invalid invokeMap type.")
+        json = [{
+            "id": "artist_info",
+            "args": {"artistId": id}
+        },
+                {
+                    "id": "artist_album",
+                    "args": {"artistId": id,
+                             "albumType": "main",
+                             "tracksYn": "Y",
+                             "page": 1,
+                             "size": 500
+                            }}]
         r = self.make_call("api", "3/home/invokeMap?", json=json)
         if r['ret_code'] != 0:
-            raise logger.critical("Failed to get a map.")
+            raise InvokeMapError(r)
+        return r
+    
+    def get_album(self, id: int) -> dict:
+        """Retrieves album information
+
+        Args:
+            id (int): Album unique id.
+
+        Raises:
+            InvokeMapError: Failed to invoke map.
+
+        Returns:
+            dict: API response.
+        """
+        json = [{
+            "id": "album_info",
+            "args": {"albumId": id}
+        },
+                {
+                    "id": "artist_role_info",
+                    "args": {"contentsId": id,
+                             "type": "ALBUM"
+                            }}]
+        r = self.make_call("api", "3/home/invokeMap?", json=json)
+        if r['ret_code'] != 0:
+            raise InvokeMapError(r)
+        return r
+    
+    def get_track(self, id: int) -> dict:
+        """Retrieves track information
+
+        Args:
+            id (int): Track unique id.
+
+        Raises:
+            InvokeMapError: Failed to invoke map.
+
+        Returns:
+            dict: API reponse
+        """
+        json=[{"id":"track_detail", 
+               "args":{"trackId":id}
+            }]
+        r = self.make_call("api", "3/home/invokeMap?", json=json)
+        if r['ret_code'] != 0:
+            raise InvokeMapError(r)
         return r

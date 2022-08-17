@@ -22,36 +22,41 @@ class Download:
         self.settings = Settings().Bugs()
         self.client = bugs.Client()
         self.conn_info = self.client.auth(username=self.settings['username'], password=self.settings['password'])
-        self.meta = self.collect(type, id)
+        logger.info(f"Threads: {self.settings['threads']}")
         if type == "artist":
             self._artist(id)
         elif type == "album":
-            self._album(self.meta['list'][0]['album_info']['result'])
+            self._album(id)
 
     def _artist(self, id: int):
         """Handle artist downloads
 
         Args:
             id (int): Unique Artist ID
+        
+        Note:
+            self.client.get_artist() returns an album list, but does not include all the necessary tagging info.
+            This means it's not worth passing it on and an additional request has to be used.
         """
-        logger.info(f"{len(self.meta['list'][1]['artist_album']['list'])} releases found")
-        for album in self.meta['list'][1]['artist_album']['list']:
-            contribution = contribution_check(id), int(album['artist_id'])
+        artist = self.client.get_artist(id)
+        logger.info(f"{len(artist['list'][1]['artist_album']['list'])} releases found")
+        for album in artist['list'][1]['artist_album']['list']:
+            contribution = contribution_check(id, int(album['artist_id']))
             if contribution:
                 if self.settings['contributions'] == 'Y':
-                    self._album(album)
+                    self._album(album['album_id'])
                 else:
                     logger.debug("Skipping album contribution")
             else:
-                self._album(album)
-
-    def _album(self, album: dict):
+                self._album(album['album_id'])
+                
+    def _album(self, id: int):
         """Handle album downloads
 
         Args:
-            album (dict): API response containing album information
+            id (int): Unique album id
         """
-        self.album = album # Assign to self from here on as it'll be referenced often across the class.
+        self.album = self.client.get_album(id)['list'][0]['album_info']['result']
         logger.info(f"Album: {self.album['title']}")
         # Acquire disc total
         self.album['disc_total'] = self.album['tracks'][-1]['disc_id']
@@ -60,7 +65,6 @@ class Download:
         self._album_path()
         self._download_cover()
         # Begin downloading tracks
-        logger.info(f"Threads: {self.settings['threads']}")
         with ThreadPoolExecutor(max_workers=int(self.settings['threads'])) as executor:
             executor.map(self._download, self.album['tracks'])
     
@@ -99,7 +103,7 @@ class Download:
         else:
             file_path = os.path.join(self.album_path, f"{track['track_no']}. {sanitize(track['track_title'])}.temp")
         if self._exist_check(file_path):
-            logger.info(f"{track['track_title']} already exists")
+            logger.debug(f"{track['track_title']} already exists")
         else:
             # Create params required to request the track
             params = {
@@ -265,17 +269,3 @@ class Download:
         else:
             lyrics = ""
         return lyrics
-
-    @logger.catch
-    def collect(self, type: str, id: int) -> dict:
-        """Collect metadata from API
-
-        Args:
-            type (str): Download type. (artist/album/track)
-            id (int): Unique ID
-
-        Returns:
-            dict: API response.
-        """
-        meta = self.client.get_meta(type=type, id=int(id))
-        return meta
