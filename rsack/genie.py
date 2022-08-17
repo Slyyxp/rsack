@@ -17,6 +17,7 @@ class Download:
         self.client = genie.Client()
         self.client.auth(username=self.settings['username'], password=self.settings['password'])
         self.meta = self._collect(type, id)
+        logger.info(f"Threads: {self.settings['threads']}")
         if type == "artist":
             self._artist()
         elif type == "album":
@@ -66,7 +67,6 @@ class Download:
             track_artist.append(track['ARTIST_NAME'])
 
         # Create ThreadPoolExecutor to handle multiple downloads at once
-        logger.info(f"Threads: {self.settings['threads']}")
         with ThreadPoolExecutor(max_workers=int(self.settings['threads'])) as executor:
             executor.map(self._track, track_ids, track_numbers,
                          disc_numbers, track_artist)
@@ -82,26 +82,27 @@ class Download:
             track_artist (str): Name of the artist connected to the track
         """
         meta = self.client.get_stream_meta(id)
-        logger.info(f"Track: {unquote(meta['SONG_NAME'])}")
-        ext = get_ext(meta['FILE_EXT'])
-        file_path = os.path.join(self.album_path, f"{track_number}. {sanitize(unquote(meta['SONG_NAME']))}{ext}")
-        if os.path.exists(file_path):
-            logger.debug(f"{file_path} already exists.")
-        else:
-            r = self.client.session.get(unquote(meta['STREAMING_MP3_URL']))
-            r.raise_for_status()
-            lyrics = self.client.get_timed_lyrics(id)
-            if self.settings['timed_lyrics'] == 'Y' and lyrics != None:
-                lyrics = format_genie_lyrics(lyrics)
-            try:
-                self._write_track(file_path, r)
-            except OSError:
-                # OSError assumes excessive file length, rename file and continue writing
-                file_path = os.path.join(self.album_path, f"{track_number}.{ext}")
-                logger.debug(f"{track_number} has been renamed as it exceeded the maximum length.")
-                self._write_track(file_path, r)
-            self._fix_tags(file_path, lyrics, ext, track_number, disc_number,
-                           track_artist, unquote(meta['SONG_NAME']))
+        if meta: # Meta can return False if unavailable for stream
+            logger.info(f"Track: {unquote(meta['SONG_NAME'])}")
+            ext = get_ext(meta['FILE_EXT'])
+            file_path = os.path.join(self.album_path, f"{track_number}. {sanitize(unquote(meta['SONG_NAME']))}{ext}")
+            if os.path.exists(file_path):
+                logger.debug(f"{file_path} already exists.")
+            else:
+                r = self.client.session.get(unquote(meta['STREAMING_MP3_URL']))
+                r.raise_for_status()
+                lyrics = self.client.get_timed_lyrics(id)
+                if self.settings['timed_lyrics'] == 'Y' and lyrics != None:
+                    lyrics = format_genie_lyrics(lyrics)
+                try:
+                    self._write_track(file_path, r)
+                except OSError:
+                    # OSError assumes excessive file length, rename file and continue writing
+                    file_path = os.path.join(self.album_path, f"{track_number}.{ext}")
+                    logger.debug(f"{track_number} has been renamed as it exceeded the maximum length.")
+                    self._write_track(file_path, r)
+                self._fix_tags(file_path, lyrics, ext, track_number, disc_number,
+                            track_artist, unquote(meta['SONG_NAME']))
 
     @staticmethod
     def _write_track(file_path: str, r: Response):

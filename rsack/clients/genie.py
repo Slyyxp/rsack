@@ -139,6 +139,7 @@ class Client:
             logger.critical("Failed to retrieve metadata")
         if r['Result']['RetCode'] == "S00001":
             logger.debug("This content is currently unavailable for service")
+            return False
         return r['DataSet']['DATA'][0]
     
     def get_timed_lyrics(self, id: str) -> dict:
