@@ -43,7 +43,10 @@ class Download:
         if not os.path.isdir(self.album_path):
             logger.debug(f"Creating: {self.album_path}")
             os.makedirs(self.album_path)
-        self._download_cover(unquote(meta['DATA0']['DATA'][0]['ALBUM_IMG_PATH_600']))
+        cover_url = unquote(meta['DATA0']['DATA'][0]['ALBUM_IMG_PATH_600'])
+        if cover_url == "":
+            cover_url = unquote(meta['DATA0']['DATA'][0]['ALBUM_IMG_PATH'])
+        self._download_cover(cover_url)
 
         # Create dict containing relevant album information for tagging.
         self.album_meta = {
