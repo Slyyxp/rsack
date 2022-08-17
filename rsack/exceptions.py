@@ -13,4 +13,10 @@ class InvokeMapError(Exception):
     
     def __str__(self) -> str:
         return self.message
-        
+    
+class InvalidURL(Exception):
+    def __init__(self, url: str):
+        self.url = url
+    
+    def __str__(self) -> str:
+        return f"{self.url} is invalid."    

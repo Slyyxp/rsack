@@ -41,6 +41,7 @@ class Download:
             self.album_path = os.path.join(
                 self.settings['path'], f"{artist_name} - {sanitize(unquote(meta['DATA0']['DATA'][0]['ALBUM_NAME']))}")
         if not os.path.isdir(self.album_path):
+            logger.debug(f"Creating: {self.album_path}")
             os.makedirs(self.album_path)
         self._download_cover(unquote(meta['DATA0']['DATA'][0]['ALBUM_IMG_PATH_600']))
 
@@ -143,6 +144,7 @@ class Download:
             audio['TPE2'] = id3.TPE2(text=self.album_meta['album_artist'])
             if lyrics != None:
                 audio['USLT'] = id3.USLT(text=lyrics)
+            logger.debug(f"Writing tags to: {path}")
             audio.save(path, "v2_version=3") # Write file
         else:
             audio = FLAC(path)
@@ -155,6 +157,7 @@ class Download:
             audio['ALBUMARTIST'] = self.album_meta['album_artist']
             if lyrics != None:
                 audio['LYRICS'] = lyrics
+            logger.debug(f"Writing tags to: {path}")
             audio.save()  # Write file
 
     def _download_cover(self, url: str):

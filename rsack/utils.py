@@ -6,6 +6,8 @@ from loguru import logger
 from getpass import getpass
 from configparser import ConfigParser
 
+from rsack.exceptions import InvalidURL
+
 class Settings:
     def __init__(self, check=False):
         self.ini_path = os.path.join(get_settings_path(), 'rsack_settings.ini')
@@ -124,8 +126,7 @@ def genie_id(url: str) -> match:
         result = match(expression, url)
     if result:
         return result
-    
-    logger.critical("Invalid URL: {}".format(url))
+    raise InvalidURL(url)
  
 def get_settings_path() -> str:
     """Returns path of home folder to store settings.ini"""
