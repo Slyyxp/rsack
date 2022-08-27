@@ -34,6 +34,7 @@ class Settings:
         bugs_artist_folders = input('Utilize artist folders in Bugs directory structure? (Y/N)\n')
         bugs_lyrics = input('Enter your preferred Bugs.co.kr lyrics type: (T = Timed, N = Normal)\n')
         bugs_contributions = input('Include contributions in artist batches?: (Y/N)\n')
+        bugs_cover_size = input("Enter the cover artwork size: (75/140/200/500/1000/original)\n")
         
         # Genie.co.kr Inputs
         genie_username = input(
@@ -54,7 +55,9 @@ class Settings:
                           'path': bugs_path,
                           'artist_folders': bugs_artist_folders,
                           'lyrics': bugs_lyrics,
-                          'contributions': bugs_contributions}
+                          'contributions': bugs_contributions,
+                          "cover_size": bugs_cover_size}
+        
         config['Genie'] = {'username': genie_username,
                            'password': genie_password,
                            'threads': genie_threads,

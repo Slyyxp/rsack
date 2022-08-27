@@ -172,7 +172,7 @@ class Download:
         if os.path.exists(self.cover_path):
             logger.info('Cover already exists')
         else:
-            r = requests.get(self.album['img_urls']['500'])
+            r = requests.get(self.album['img_urls'][self.settings['cover_size']])
             r.raise_for_status
             with open(self.cover_path, 'wb') as f:
                 f.write(r.content)
