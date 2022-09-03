@@ -129,6 +129,7 @@ class Client:
             "mts": "Y",
             "dcd": self.dev_id,
             "stk": self.stm_token,
+            "itn": "Y",
             "svc": "IV",
             "unm": self.usr_num,
             "uxtk": self.usr_token,
