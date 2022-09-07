@@ -181,7 +181,7 @@ def _is_win() -> bool:
 def sanitize(fn: str) -> str:
     """Sanitizes filenames based on Operating System"""
     if _is_win():
-        return sub(r'[\/:*?"><|]', '_', fn).strip()
+        return sub(r'[\/:*?"><|]', '_', fn).strip('. ')
     else:
         return sub('/', '_', fn).strip()
 
