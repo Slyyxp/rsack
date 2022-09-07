@@ -144,8 +144,8 @@ class Download:
                 audio = id3.ID3()
             # Append necessary tags
             audio['TIT2'] = id3.TIT2(text=str(track_title))
-            audio['TALB'] = id3.TALB(text=str(self.album_meta['album_title']))
-            audio['TCON'] = id3.TCON(text=str(self.album_meta['album_title']))
+            audio['TALB'] = id3.TALB(text=unquote(self.album_meta['album_title']))
+            audio['TCON'] = id3.TCON(text=unquote(self.album_meta['album_title']))
             audio['TRCK'] = id3.TRCK(text=str(track_number) + "/" + str(self.album_meta['track_total']))
             audio['TPOS'] = id3.TPOS(text=str(disc_number) + "/" + str(self.album_meta['disc_total']))
             audio['TDRC'] = id3.TDRC(text=self.album_meta['release_date'])
