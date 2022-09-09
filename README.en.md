@@ -72,8 +72,3 @@ Bugs does not offer any 24bit files at the time of writing this.
 ### Which Streaming Pass Do I Need?
 KT offer a 24bit package, beyond that i'm not sure.  
 https://product.kt.com/wDic/productDetail.do?ItemCode=1282
-
-### Why Do I Keep Getting DeviceID Error?
-This is caused by streaming tracks on a different device.  
-It will resolve itself within 5 minutes usually.  
-This was implemented by Genie to likely prevent account sharing.
