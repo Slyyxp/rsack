@@ -74,8 +74,3 @@ track = client.get_stream_meta(95970973) # 트랙 UID를 사용해서 스트리�
 ### 어떤 이용권을 사용해야 하나요?
 KT 혜택에 보시면 24비트 음원 스트리밍이 가능한 이용권이 있습니다
 https://product.kt.com/wDic/productDetail.do?ItemCode=1282
-
-### 왜 DeviceID Error라는 오류가 계속 발생하나요?
-이 문제는 서로 다른 기기에서 음원을 스트리밍 할 때 발생합니다
-보통 5분 이내에 저절로 고쳐집니다
-이것은 지니 측에서 계정 공유를 막기 위해 만들어둔 것입니다
