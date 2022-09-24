@@ -119,18 +119,23 @@ class Download:
             r = requests.get(f"http://api.bugs.co.kr/3/tracks/{track['track_id']}/listen/android/flac", headers=headers, params=params, stream=True)
             if r.url.split("?")[0].endswith(".mp3"): # If response redirects to MP3 file set quality to .mp3
                 quality = '.mp3'
+            elif r.url.split("?")[0].endswith(".m4a"):
+                quality = '.m4a' 
             else: # Otherwise .flac
                 quality = '.flac'
-            if r.status_code == 404:
-                logger.info(f"{track['track_title']} unavailable")
+            if quality != '.m4a':
+                if r.status_code == 404:
+                    logger.info(f"{track['track_title']} unavailable")
+                else:
+                    with open(file_path, 'ab') as f:
+                        for chunk in r.iter_content(32 * 1024):
+                            if chunk:
+                                f.write(chunk)
+                    c_path = file_path.replace(".temp", quality)
+                    os.rename(file_path, c_path)
+                    self._tag(track, c_path)
             else:
-                with open(file_path, 'ab') as f:
-                    for chunk in r.iter_content(32 * 1024):
-                        if chunk:
-                            f.write(chunk)
-                c_path = file_path.replace(".temp", quality)
-                os.rename(file_path, c_path)
-                self._tag(track, c_path)
+                logger.info(f"{track['track_title']} is unavailable.")
 
     @staticmethod
     def _return_bytes(file_path: str) -> int:
