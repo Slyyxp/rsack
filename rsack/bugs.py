@@ -77,9 +77,32 @@ class Download:
         else:
             self.album_path = os.path.join(
                 self.settings['path'], f"{sanitize(self.album['artist_disp_nm'])} - {sanitize(self.album['title'])}")
-        if not os.path.exists(self.album_path):
-            logger.debug(f"Creating {self.album_path}")
-            os.makedirs(self.album_path)
+        try:
+            if not os.path.exists(self.album_path):
+                logger.debug(f"Creating {self.album_path}")
+                os.makedirs(self.album_path)
+        except OSError as exc:
+            if exc.errno == 36: # Exceeded path limit
+                if len(self.album['artist_disp_name']) > len(self.album['title']): #  Check whether artist name or album name is the issue
+                    self.album['artist_disp_name'] = "Various Artists" # Change to V.A. as Bugs has likely compiled a huge list of artists
+                    logger.debug("Artist name forcibly changed to Various Artists.")
+                else: # If title is the issue
+                    logger.debug("Album title forcibly changed as it exceeded the allowed Path length.")
+                    self.album['title'] = "EDIT ME"
+        
+                # Reassign album path
+                if self.settings['artist_folders'].upper() == 'Y':
+                    self.album_path = os.path.join(
+                        self.settings['path'], sanitize(self.album['artist_disp_nm']), f"{sanitize(self.album['artist_disp_nm'])} - {sanitize(self.album['title'])}")
+                else:
+                    self.album_path = os.path.join(
+                        self.settings['path'], f"{sanitize(self.album['artist_disp_nm'])} - {sanitize(self.album['title'])}")
+
+                # Retry
+                if not os.path.exists(self.album_path):
+                    logger.debug(f"Creating {self.album_path}")
+                    os.makedirs(self.album_path)
+                    
         # Create nested disc folders
         if self.album['disc_total'] > 1:
             self.discs = True
