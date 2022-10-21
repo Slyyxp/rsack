@@ -73,7 +73,7 @@ class Download:
         # Append required information to their relevant lists
         for track in meta['DATA1']['DATA']:
             track_ids.append(int(track['SONG_ID']))
-            track_numbers.append(track['ALBUM_TRACK_NO'])
+            track_numbers.append(f"{track['ALBUM_TRACK_NO']}")
             disc_numbers.append(track['ALBUM_CD_NO'])
             track_artist.append(track['ARTIST_NAME'])
 
@@ -96,7 +96,7 @@ class Download:
         if meta: # Meta can return False if unavailable for stream
             logger.info(f"Track: {unquote(meta['SONG_NAME'])}")
             ext = get_ext(meta['FILE_EXT'])
-            file_path = os.path.join(self.album_path, f"{track_number}. {sanitize(unquote(meta['SONG_NAME']))}{ext}")
+            file_path = os.path.join(self.album_path, f"{int(track_number):02d}. {sanitize(unquote(meta['SONG_NAME']))}{ext}")
             if os.path.exists(file_path):
                 logger.debug(f"{file_path} already exists.")
             else:

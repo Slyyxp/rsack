@@ -122,9 +122,9 @@ class Download:
         """
         logger.info(f"Track: {track['track_title']}")
         if self.discs:
-            file_path = os.path.join(self.album_path, f"Disc {str(track['disc_id'])}", f"{track['track_no']}. {sanitize(track['track_title'])}.temp")
+            file_path = os.path.join(self.album_path, f"Disc {str(track['disc_id'])}", f"{track['track_no']:02d}. {sanitize(track['track_title'])}.temp")
         else:
-            file_path = os.path.join(self.album_path, f"{track['track_no']}. {sanitize(track['track_title'])}.temp")
+            file_path = os.path.join(self.album_path, f"{track['track_no']:02d}. {sanitize(track['track_title'])}.temp")
         if self._exist_check(file_path):
             logger.debug(f"{track['track_title']} already exists")
         else:
