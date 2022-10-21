@@ -120,6 +120,8 @@ class Download:
         Args:
             track (dict): Contains track information from API response
         """
+        if track['is_flac_str_premium'] and not self.client.premium:
+            logger.warning("Lossless is only available for Premium users, MP3 will be downloaded.")
         logger.info(f"Track: {track['track_title']}")
         if self.discs:
             file_path = os.path.join(self.album_path, f"Disc {str(track['disc_id'])}", f"{track['track_no']:02d}. {sanitize(track['track_title'])}.temp")

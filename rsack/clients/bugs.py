@@ -26,9 +26,10 @@ class Client:
         if r['ret_code'] == 300:
             logger.critical("Authentication Error, Invalid Credentials")
         else:
-            logger.info("Login Successful")
+            logger.info(f"Login Successful : {r['result']['right']['product']['name']}")
         self.nickname = r['result']['extra_data']['nickname']
         self.connection_info = r['result']['coninfo']
+        self.premium = r['result']['right']['stream']['is_flac_premium']
         return self.connection_info
 
     def make_call(self, sub: str, epoint: str, data: dict = None, json: dict = None, params: dict = None):
