@@ -38,32 +38,22 @@ class Download:
     @logger.catch
     def _album(self, id: int):
         """Iterate tracks in album"""
-        meta = self.client.get_album(id)
-        logger.info(f"Album: {unquote(meta['DATA0']['DATA'][0]['ALBUM_NAME'])}")
-        artist_name = sanitize(unquote(meta['DATA0']['DATA'][0]['ARTIST_NAME']))
+        self.meta = self.client.get_album(id)
+        logger.info(f"Album: {unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME'])}")
+        artist_name = sanitize(unquote(self.meta['DATA0']['DATA'][0]['ARTIST_NAME']))
         if self.settings['artist_folders'].upper() == 'Y':
             self.album_path = os.path.join(
-                self.settings['path'], artist_name, f"{artist_name} - {sanitize(unquote(meta['DATA0']['DATA'][0]['ALBUM_NAME']))}")
+                self.settings['path'], artist_name, f"{artist_name} - {sanitize(unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME']))}")
         else:
             self.album_path = os.path.join(
-                self.settings['path'], f"{artist_name} - {sanitize(unquote(meta['DATA0']['DATA'][0]['ALBUM_NAME']))}")
+                self.settings['path'], f"{artist_name} - {sanitize(unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME']))}")
         if not os.path.isdir(self.album_path):
             logger.debug(f"Creating: {self.album_path}")
             os.makedirs(self.album_path)
-        cover_url = unquote(meta['DATA0']['DATA'][0]['ALBUM_IMG_PATH_600'])
+        cover_url = unquote(self.meta['DATA0']['DATA'][0]['ALBUM_IMG_PATH_600'])
         if cover_url == "":
-            cover_url = unquote(meta['DATA0']['DATA'][0]['ALBUM_IMG_PATH'])
+            cover_url = unquote(self.meta['DATA0']['DATA'][0]['ALBUM_IMG_PATH'])
         self._download_cover(cover_url)
-
-        # Create dict containing relevant album information for tagging.
-        self.album_meta = {
-            "album_title": meta['DATA0']['DATA'][0]['ALBUM_NAME'],
-            "track_total": len(meta['DATA1']['DATA']),
-            "album_artist": unquote(meta['DATA0']['DATA'][0]['ARTIST_NAME']),
-            "release_date": meta['DATA0']['DATA'][0]['ALBUM_RELEASE_DT'],
-            "planning": unquote(meta['DATA0']['DATA'][0]['ALBUM_PLANNER'])
-        }
-        self.album_meta['disc_total'] = meta['DATA1']['DATA'][self.album_meta['track_total'] - 1]['ALBUM_CD_NO']
 
         # Initialize empty lists
         track_ids = []
@@ -71,7 +61,7 @@ class Download:
         disc_numbers = []
         track_artist = []
         # Append required information to their relevant lists
-        for track in meta['DATA1']['DATA']:
+        for track in self.meta['DATA1']['DATA']:
             track_ids.append(int(track['SONG_ID']))
             track_numbers.append(f"{track['ALBUM_TRACK_NO']}")
             disc_numbers.append(track['ALBUM_CD_NO'])
@@ -103,8 +93,6 @@ class Download:
                 r = self.client.session.get(unquote(meta['STREAMING_MP3_URL']))
                 r.raise_for_status()
                 lyrics = self.client.get_timed_lyrics(id)
-                if self.settings['timed_lyrics'] == 'Y' and lyrics != None:
-                    lyrics = format_genie_lyrics(lyrics)
                 try:
                     self._write_track(file_path, r)
                 except OSError:
@@ -143,30 +131,38 @@ class Download:
             except id3.ID3NoHeaderError:
                 audio = id3.ID3()
             # Append necessary tags
-            audio['TIT2'] = id3.TIT2(text=str(track_title))
-            audio['TALB'] = id3.TALB(text=unquote(self.album_meta['album_title']))
-            audio['TCON'] = id3.TCON(text=unquote(self.album_meta['album_title']))
-            audio['TRCK'] = id3.TRCK(text=str(track_number) + "/" + str(self.album_meta['track_total']))
-            audio['TPOS'] = id3.TPOS(text=str(disc_number) + "/" + str(self.album_meta['disc_total']))
-            audio['TDRC'] = id3.TDRC(text=self.album_meta['release_date'])
-            audio['TPUB'] = id3.TPUB(text=self.album_meta['planning'])
+            audio['TIT2'] = id3.TIT2(text=track_title)
+            audio['TALB'] = id3.TALB(text=unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME']))
+            audio['TCON'] = id3.TCON(text=unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME']))
+            audio['TRCK'] = id3.TRCK(text=str(track_number) + "/" + str(len(self.meta['DATA1']['DATA'])))
+            audio['TPOS'] = id3.TPOS(text=str(disc_number) + "/" + str(self.meta['DATA1']['DATA'][len(self.meta['DATA1']['DATA']) - 1]['ALBUM_CD_NO']))
+            audio['TDRC'] = id3.TDRC(text=self.meta['DATA0']['DATA'][0]['ALBUM_RELEASE_DT'])
+            audio['TPUB'] = id3.TPUB(text=unquote(self.meta['DATA0']['DATA'][0]['ALBUM_PLANNER']))
             audio['TPE1'] = id3.TPE1(text=unquote(track_artist))
-            audio['TPE2'] = id3.TPE2(text=self.album_meta['album_artist'])
+            audio['TPE2'] = id3.TPE2(text=unquote(self.meta['DATA0']['DATA'][0]['ARTIST_NAME']))
+            audio['TCON'] = id3.TCON(text="")
+            audio.setall("COMM", [id3.COMM(text=[u"지니뮤직"], encoding=id3.Encoding.UTF8)])
             if lyrics != None and self.settings['timed_lyrics'] == 'Y':
-                audio['USLT'] = id3.USLT(text=lyrics)
+                    lyrics = [(v, int(k)) for k, v in lyrics.items()]
+                    audio.setall("SYLT", [id3.SYLT(encoding=id3.Encoding.UTF8, lang='eng', format=2, type=1, text=lyrics)])
             logger.debug(f"Writing tags to: {path}")
             audio.save(path, "v2_version=3") # Write file
         else:
             audio = FLAC(path)
             # Append necessary tags
-            audio['TRACKTOTAL'] = str(self.album_meta['track_total'])
-            audio['DISCTOTAL'] = str(self.album_meta['disc_total'])
-            audio['DATE'] = self.album_meta['release_date']
-            audio['LABEL'] = self.album_meta['planning']
+            audio['TRACKNUMBER'] = str(track_number)
+            audio['TRACKTOTAL'] = str(len(self.meta['DATA1']['DATA']))
+            audio['DISCNUMBER'] = str(disc_number)
+            audio['DISCTOTAL'] = str(self.meta['DATA1']['DATA'][len(self.meta['DATA1']['DATA']) - 1]['ALBUM_CD_NO'])
+            audio['DATE'] = self.meta['DATA0']['DATA'][0]['ALBUM_RELEASE_DT']
+            audio['LABEL'] = self.meta['DATA0']['DATA'][0]['ALBUM_PLANNER']
             audio['ARTIST'] = unquote(track_artist)
-            audio['ALBUMARTIST'] = self.album_meta['album_artist']
+            audio['ALBUMARTIST'] = unquote(self.meta['DATA0']['DATA'][0]['ARTIST_NAME'])
+            audio['ALBUM'] = unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME'])
+            audio['TITLE'] = track_title
+            audio['COMMENT'] = "지니뮤직"
             if lyrics != None and self.settings['timed_lyrics'] == 'Y':
-                audio['LYRICS'] = lyrics
+                audio['LYRICS'] = format_genie_lyrics(lyrics)
             logger.debug(f"Writing tags to: {path}")
             audio.save()  # Write file
 
