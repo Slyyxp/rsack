@@ -50,6 +50,15 @@ class Download:
         if not os.path.isdir(self.album_path):
             logger.debug(f"Creating: {self.album_path}")
             os.makedirs(self.album_path)
+            
+        # Create disc directories
+        self.disc_total = int(self.meta['DATA1']['DATA'][len(self.meta['DATA1']['DATA']) - 1]['ALBUM_CD_NO'])
+        if  self.disc_total > 1:
+            for i in range(0, self.disc_total):
+                d = os.path.join(self.album_path, f"Disc {i + 1}")
+                if not os.path.isdir(d):
+                    os.makedirs(d)
+                    
         cover_url = unquote(self.meta['DATA0']['DATA'][0]['ALBUM_IMG_PATH_600'])
         if cover_url == "":
             cover_url = unquote(self.meta['DATA0']['DATA'][0]['ALBUM_IMG_PATH'])
@@ -86,7 +95,10 @@ class Download:
         if meta: # Meta can return False if unavailable for stream
             logger.info(f"Track: {unquote(meta['SONG_NAME'])}")
             ext = get_ext(meta['FILE_EXT'])
-            file_path = os.path.join(self.album_path, f"{int(track_number):02d}. {sanitize(unquote(meta['SONG_NAME']))}{ext}")
+            if self.disc_total > 1:
+                file_path = os.path.join(self.album_path, f"Disc {disc_number}", f"{int(track_number):02d}. {sanitize(unquote(meta['SONG_NAME']))}{ext}")
+            else:
+                file_path = os.path.join(self.album_path, f"{int(track_number):02d}. {sanitize(unquote(meta['SONG_NAME']))}{ext}")
             if os.path.exists(file_path):
                 logger.debug(f"{file_path} already exists.")
             else:
@@ -135,7 +147,7 @@ class Download:
             audio['TALB'] = id3.TALB(text=unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME']))
             audio['TCON'] = id3.TCON(text=unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME']))
             audio['TRCK'] = id3.TRCK(text=str(track_number) + "/" + str(len(self.meta['DATA1']['DATA'])))
-            audio['TPOS'] = id3.TPOS(text=str(disc_number) + "/" + str(self.meta['DATA1']['DATA'][len(self.meta['DATA1']['DATA']) - 1]['ALBUM_CD_NO']))
+            audio['TPOS'] = id3.TPOS(text=str(disc_number) + "/" + str(self.disc_total))
             audio['TDRC'] = id3.TDRC(text=self.meta['DATA0']['DATA'][0]['ALBUM_RELEASE_DT'])
             audio['TPUB'] = id3.TPUB(text=unquote(self.meta['DATA0']['DATA'][0]['ALBUM_PLANNER']))
             audio['TPE1'] = id3.TPE1(text=unquote(track_artist))
@@ -153,7 +165,7 @@ class Download:
             audio['TRACKNUMBER'] = str(track_number)
             audio['TRACKTOTAL'] = str(len(self.meta['DATA1']['DATA']))
             audio['DISCNUMBER'] = str(disc_number)
-            audio['DISCTOTAL'] = str(self.meta['DATA1']['DATA'][len(self.meta['DATA1']['DATA']) - 1]['ALBUM_CD_NO'])
+            audio['DISCTOTAL'] = str(self.disc_total)
             audio['DATE'] = self.meta['DATA0']['DATA'][0]['ALBUM_RELEASE_DT']
             audio['LABEL'] = self.meta['DATA0']['DATA'][0]['ALBUM_PLANNER']
             audio['ARTIST'] = unquote(track_artist)
