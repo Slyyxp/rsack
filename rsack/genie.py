@@ -152,7 +152,7 @@ class Download:
             audio['TPUB'] = id3.TPUB(text=self.album_meta['planning'])
             audio['TPE1'] = id3.TPE1(text=unquote(track_artist))
             audio['TPE2'] = id3.TPE2(text=self.album_meta['album_artist'])
-            if lyrics != None:
+            if lyrics != None and self.settings['timed_lyrics'] == 'Y':
                 audio['USLT'] = id3.USLT(text=lyrics)
             logger.debug(f"Writing tags to: {path}")
             audio.save(path, "v2_version=3") # Write file
@@ -165,7 +165,7 @@ class Download:
             audio['LABEL'] = self.album_meta['planning']
             audio['ARTIST'] = unquote(track_artist)
             audio['ALBUMARTIST'] = self.album_meta['album_artist']
-            if lyrics != None:
+            if lyrics != None and self.settings['timed_lyrics'] == 'Y':
                 audio['LYRICS'] = lyrics
             logger.debug(f"Writing tags to: {path}")
             audio.save()  # Write file
