@@ -1,0 +1,24 @@
+[Bugs]
+username = email@protonmail.com
+password =  mypassword
+threads = 2
+path = C:\Music\Korean
+lyrics = T
+contributions = N
+cover_size = original
+artist_folders = Y
+
+[Genie]
+username = email@protonmail.com
+password = mypassword
+threads = 2
+path = C:\Music\Korean
+artist_folders = Y
+timed_lyrics = Y
+contributions = N
+
+[KKBox]
+email = email@protonmail.com
+password = mypassword
+threads = 2
+path = C:\Music\KKBox

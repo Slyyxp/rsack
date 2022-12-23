@@ -79,6 +79,12 @@ class Settings:
         Returns the contents of the 'Genie' section of settings.ini as dict.
         """
         return dict(self.config.items('Genie'))
+    
+    def KKBox(self) -> dict:
+        """
+        Returns the contents of the 'KKBox' section of settings.ini as dict.
+        """
+        return dict(self.config.items('KKBox'))
 
 
 def track_to_flac(track: dict, album: dict, lyrics: str) -> dict:
