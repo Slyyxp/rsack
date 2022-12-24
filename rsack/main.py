@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 
 from rsack.version import __version__
 from rsack import bugs, genie, kkbox
-from rsack.utils import bugs_id, genie_id
+from rsack.utils import Settings, bugs_id, genie_id
 
 def get_args():
     """Generate arguments"""

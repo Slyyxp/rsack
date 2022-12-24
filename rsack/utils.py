@@ -1,4 +1,5 @@
 import os
+from sys import exit
 from platform import system
 from re import match, sub
 from datetime import datetime
@@ -13,7 +14,7 @@ class Settings:
         self.ini_path = os.path.join(get_settings_path(), 'rsack_settings.ini')
         # If settings doesn't exist then create one
         if not os.path.isfile(self.ini_path):
-            logger.debug(f'Generating {self.ini_path}')
+            logger.debug(f'Writing {self.ini_path}')
             self.generate_settings()
         # Read settings.ini
         self.config = ConfigParser()
@@ -24,49 +25,32 @@ class Settings:
         """
         Generates settings.ini based on user input
         """
-        # Bugs.co.kr Inputs
-        bugs_username = input(
-            'Please enter your Bugs.co.kr email: (If none leave blank)\n')
-        bugs_password = getpass(
-            'Please enter your Bugs.co.kr password: (If none leave blank)\n')
-        bugs_threads = input('How many Bugs.co.kr download threads do you want to use?: (2-3 recommended)\n')
-        bugs_path = input('Enter your download path for Bugs.co.kr:\n')
-        bugs_artist_folders = input('Utilize artist folders in Bugs directory structure? (Y/N)\n')
-        bugs_lyrics = input('Enter your preferred Bugs.co.kr lyrics type: (T = Timed, N = Normal)\n')
-        bugs_contributions = input('Include contributions in artist batches?: (Y/N)\n')
-        bugs_cover_size = input("Enter the cover artwork size: (75/140/200/500/1000/original)\n")
-        
-        # Genie.co.kr Inputs
-        genie_username = input(
-            'Please enter your Genie.co.kr username: (If none leave blank)\n')
-        genie_password = getpass(
-            'Please enter your Genie.co.kr password: (If none leave blank)\n')
-        genie_threads = input('How many Genie.co.kr download threads do you want to use?: (2-3 recommended)\n')
-        genie_path = input('Enter your download path for Genie.co.kr:\n')
-        genie_artist_folders = input('Utilize artist folders in Genie directory structure? (Y/N)\n')
-        genie_timed_lyrics = input('Use timed lyrics? (Y/N) [This requires an additional request per track]\n')
-        genie_contributions = input('Include contributions in artist batches?: (Y/N)\n')
-
         # Write file
         config = ConfigParser()
-        config['Bugs'] = {'username': bugs_username,
-                          'password': bugs_password,
-                          'threads': bugs_threads,
-                          'path': bugs_path,
-                          'artist_folders': bugs_artist_folders,
-                          'lyrics': bugs_lyrics,
-                          'contributions': bugs_contributions,
-                          "cover_size": bugs_cover_size}
+        config['Bugs'] = {'username': "email@protonmail.com",
+                          'password': "mypassword",
+                          'threads': "2",
+                          'path': "C:\Music\Korean",
+                          'artist_folders': "Y",
+                          'lyrics': "T",
+                          'contributions': "N",
+                          "cover_size": "original"}
         
-        config['Genie'] = {'username': genie_username,
-                           'password': genie_password,
-                           'threads': genie_threads,
-                           'path': genie_path,
-                           'artist_folders': genie_artist_folders,
-                           'timed_lyrics': genie_timed_lyrics,
-                           'contributions': genie_contributions}
+        config['Genie'] = {'username': "email@protonmail.com",
+                           'password': "mypassword",
+                           'threads': "2",
+                           'path': "C:\Music\Korean",
+                           'artist_folders': "Y",
+                           'timed_lyrics': "Y",
+                           'contributions': "N"}
+        config['KKBox'] = {"email": "email@protonmail.com",
+                           "password": "mypassword",
+                           "threads": "2",
+                           "path": "C:\Music\KKBox"}
+        
         with open(self.ini_path, 'w+') as configfile:
             config.write(configfile)
+        exit()
 
     def Bugs(self) -> dict:
         """
