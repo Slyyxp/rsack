@@ -2,7 +2,7 @@ import os
 import mutagen.id3 as id3
 from loguru import logger
 from urllib.parse import unquote
-from mutagen.flac import FLAC
+from mutagen.flac import FLAC, Picture
 from concurrent.futures import ThreadPoolExecutor
 from requests.models import Response
 
@@ -142,6 +142,12 @@ class Download:
                 audio = id3.ID3(path)
             except id3.ID3NoHeaderError:
                 audio = id3.ID3()
+            # Delete pre-embedded artwork
+            audio.delall("APIC")
+            # Embed existing artwork
+            if self.cover_path:
+                with open(self.cover_path, 'rb') as cov_obj:
+                    audio.add(id3.APIC(3, 'image/jpg', 3, '', cov_obj.read()))
             # Append necessary tags
             audio['TIT2'] = id3.TIT2(text=track_title)
             audio['TALB'] = id3.TALB(text=unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME']))
@@ -161,6 +167,16 @@ class Download:
             audio.save(path, "v2_version=3") # Write file
         else:
             audio = FLAC(path)
+            # Delete pre-embedded artwork
+            audio.clear_pictures()
+            # Embed existing artwork
+            if self.cover_path:
+                f_image = Picture()
+                f_image.type = 3
+                f_image.desc = 'Front Cover'
+                with open(self.cover_path, 'rb') as f:
+                    f_image.data = f.read()
+                audio.add_picture(f_image)
             # Append necessary tags
             audio['TRACKNUMBER'] = str(track_number)
             audio['TRACKTOTAL'] = str(len(self.meta['DATA1']['DATA']))
@@ -180,10 +196,10 @@ class Download:
 
     def _download_cover(self, url: str):
         """Download cover artwork"""
-        path = os.path.join(self.album_path, 'cover.jpg')
-        if not os.path.isfile(path):
+        self.cover_path = os.path.join(self.album_path, 'cover.jpg')
+        if not os.path.isfile(self.cover_path):
             r = self.client.session.get(unquote(url))
-            with open(path, 'wb') as f:
+            with open(self.cover_path, 'wb') as f:
                 f.write(r.content)
         else:
-            logger.debug(f"{path} already exists.")
+            logger.debug(f"{self.cover_path} already exists.")

@@ -221,6 +221,7 @@ class Download:
         if str(file_path).endswith('.flac'):
             f_file = FLAC(file_path)
             # Add cover artwork to flac file
+            f_file.clear_pictures() # Delete existing cover artwork
             if self.cover_path:
                 f_image = Picture()
                 f_image.type = 3
@@ -265,6 +266,7 @@ class Download:
             m_file.add(id3.TRCK(encoding=3, text=f"{track['track_no']}/{track['track_total']}"))
             m_file.add(id3.TPOS(encoding=3, text=f"{track['disc_id']}/{self.album['disc_total']}"))
             # Apply cover artwork
+            m_file.delall("APIC") # Delete existing cover artwork
             if self.cover_path:
                 with open(self.cover_path, 'rb') as cov_obj:
                     m_file.add(id3.APIC(3, 'image/jpg', 3, '', cov_obj.read()))
