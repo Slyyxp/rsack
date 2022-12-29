@@ -8,7 +8,7 @@ from mutagen.id3 import ID3NoHeaderError
 from concurrent.futures import ThreadPoolExecutor
 
 from rsack.clients import bugs
-from rsack.utils import Settings, track_to_flac, insert_total_tracks, contribution_check, sanitize
+from rsack.utils import Settings, track_to_flac, insert_total_tracks, contribution_check, sanitize, _format_date
 
 
 class Download:
@@ -77,6 +77,8 @@ class Download:
         else:
             self.album_path = os.path.join(
                 self.settings['path'], f"{sanitize(self.album['artist_disp_nm'])} - {sanitize(self.album['title'])}")
+        if self.settings['append_date'] == 'Y':
+            self.album_path = self.album_path + f" [{_format_date(self.album['release_ymd'])}]"
         try:
             if not os.path.exists(self.album_path):
                 logger.debug(f"Creating {self.album_path}")
