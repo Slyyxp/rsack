@@ -49,7 +49,8 @@ class Client:
         }
         r = self.make_call("app", "member/j_Member_Login.json", data)
         if r['Result']['RetCode'] != "0":
-            logger.critical("Authentication failed.")
+            logger.critical(f"Authentication Failed: {r['RetMsg']}")
+            exit()
         else:
             logger.info("Login Successful.")
         self.usr_num = r['DATA0']['MemUno']

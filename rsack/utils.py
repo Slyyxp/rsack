@@ -4,7 +4,6 @@ from platform import system
 from re import match, sub
 from datetime import datetime
 from loguru import logger
-from getpass import getpass
 from configparser import ConfigParser
 
 from rsack.exceptions import InvalidURL
@@ -31,10 +30,10 @@ class Settings:
                           'password': "mypassword",
                           'threads': "2",
                           'path': "C:\Music\Korean",
-                          'artist_folders': "Y",
-                          'lyrics': "T",
-                          'contributions': "N",
-                          "cover_size": "original"}
+                          'timed_lyrics': "true",
+                          'contributions': "false",
+                          "cover_size": "original",
+                          "template": "/{artist}/{artist} - {title}"}
         
         config['Genie'] = {'username': "email@protonmail.com",
                            'password': "mypassword",
@@ -42,33 +41,53 @@ class Settings:
                            'path': "C:\Music\Korean",
                            'artist_folders': "Y",
                            'timed_lyrics': "Y",
-                           'contributions': "N"}
+                           'contributions': "N",
+                           "template": "/{artist}/{artist} - {title}"}
+        
         config['KKBox'] = {"email": "email@protonmail.com",
                            "password": "mypassword",
                            "threads": "2",
-                           "path": "C:\Music\KKBox"}
+                           "path": "C:\Music\KKBox",
+                           "template": "/{artist}/{artist} - {title}"}
         
         with open(self.ini_path, 'w+') as configfile:
             config.write(configfile)
         exit()
 
+    def _str_to_boolean(self, section: str, d: dict) -> dict:
+        """Iterates dict converting possible boolean values
+
+        Args:
+            section (str): Section header
+            d (dict): Dictionary to iterate
+
+        Returns:
+            dict: Dictionary with string values replaced with boolean
+        """
+        for k in d:
+            try:
+                d[k] = self.config.getboolean(section, k)
+            except ValueError: # Not a boolean
+                pass
+        return d
+        
     def Bugs(self) -> dict:
         """
         Returns the contents of the 'Bugs' section of settings.ini as dict.
         """
-        return dict(self.config.items('Bugs'))
+        return self._str_to_boolean(section='Bugs', d=dict(self.config.items('Bugs')))
 
     def Genie(self) -> dict:
         """
         Returns the contents of the 'Genie' section of settings.ini as dict.
         """
-        return dict(self.config.items('Genie'))
+        return self._str_to_boolean(section='Genie', d=dict(self.config.items('Genie')))
     
     def KKBox(self) -> dict:
         """
         Returns the contents of the 'KKBox' section of settings.ini as dict.
         """
-        return dict(self.config.items('KKBox'))
+        return self._str_to_boolean(section='KKBox', d=dict(self.config.items('KKBox')))
 
 
 def track_to_flac(track: dict, album: dict, lyrics: str) -> dict:

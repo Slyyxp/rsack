@@ -13,14 +13,12 @@ class Client:
             "Host": "api.bugs.co.kr",
         })
  
-    def auth(self, username: str, password: str):
+    def auth(self, email: str, password: str):
         """Authenticates session"""
-        self.username = username
-        self.password = password
         data = {
             "device_id": "gwAHWlkOYX_T8Sl43N78GiaD6Sg_", # Hardcode device id
             "passwd": password,
-            "userid": username
+            "userid": email
         }
         r = self.make_call("secure", "mbugs/3/login?", data=data)
         if r['ret_code'] == 300:

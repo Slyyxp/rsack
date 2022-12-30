@@ -3,23 +3,40 @@ username = email@protonmail.com
 password =  mypassword
 threads = 2
 path = C:\Music\Korean
-lyrics = T
-contributions = N
+timed_lyrics = true
+contributions = false
 cover_size = original
-artist_folders = Y
-append_date = N
+template = /{artist}/{artist} - {title}
 
 [Genie]
 username = email@protonmail.com
 password = mypassword
 threads = 2
 path = C:\Music\Korean
-artist_folders = Y
-timed_lyrics = Y
-contributions = N
+artist_folders = true
+timed_lyrics = true
+contributions = false
+template = \{artist}\{artist} - {title}
 
 [KKBox]
 email = email@protonmail.com
 password = mypassword
 threads = 2
 path = C:\Music\KKBox
+template = \{artist}\{artist} - {title}
+
+## Template Cheat Sheet
+# {artist} : artist name	
+# {title} : album title
+# {local_title} : local album title (local to korea) 							        | Bugs.co.kr only
+# {date} : release date in yyyy.mm.dd format
+# {local_date} : date released in korea in yyyy.mm.dd format						    | Bugs.co.kr only
+# {album_id} : id of the album on webstore
+# {encrypted_album_id} : encrypted album id of the album on webstore 					| KKBox only
+# {artist_id} : id of artist on webstore
+# {encrypted_artist_id} : encrypted artist id of artist on webstore 					| KKBox only
+# {type} : release type as provided by webstore (E.G SL for Single as provided by Bugs)
+# {agency_name} : name of agency the album is released under						    | Bugs.co.kr only
+# {agency_id} : id of agency on webstore								                | Bugs.co.kr only
+# {label_name} : name of the first label listed under the album						    | Genie/Bugs only
+# {label_id} : id of label on webstore									                | Bugs.co.kr only

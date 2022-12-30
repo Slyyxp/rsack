@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from requests.models import Response
 
 from rsack.clients import genie
-from rsack.utils import Settings, contribution_check, format_genie_lyrics, get_ext, sanitize
+from rsack.utils import Settings, contribution_check, format_genie_lyrics, get_ext, sanitize, _format_date
 
 
 class Download:
@@ -34,23 +34,42 @@ class Download:
             else:
                 self._album(album['ALBUM_ID'])
 
-
+    @logger.catch
+    def _template(self):
+        keys = {
+            "artist": unquote(self.album['ARTIST_NAME']),
+            "title": unquote(self.album['ALBUM_NAME']),
+            "date": self.album['ALBUM_RELEASE_DT'],
+            "album_id": str(self.album['ALBUM_ID']),
+            "artist_id": str(self.album['ARTIST_ID']),
+            "type": self.album['ALBUM_TYPE'],
+            "label_name": self.album['ALBUM_PLANNER'],
+        }
+        template = self.settings['template']
+        for k in keys:
+            template = template.replace(f"{{{k}}}", sanitize(keys[k]))
+        return template
+    
     @logger.catch
     def _album(self, id: int):
         """Iterate tracks in album"""
         self.meta = self.client.get_album(id)
-        logger.info(f"Album: {unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME'])}")
-        artist_name = sanitize(unquote(self.meta['DATA0']['DATA'][0]['ARTIST_NAME']))
-        if self.settings['artist_folders'].upper() == 'Y':
-            self.album_path = os.path.join(
-                self.settings['path'], artist_name, f"{artist_name} - {sanitize(unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME']))}")
-        else:
-            self.album_path = os.path.join(
-                self.settings['path'], f"{artist_name} - {sanitize(unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME']))}")
-        if not os.path.isdir(self.album_path):
-            logger.debug(f"Creating: {self.album_path}")
-            os.makedirs(self.album_path)
-            
+        self.album = self.meta['DATA0']['DATA'][0]
+        self._template()
+        logger.info(f"Album: {unquote(self.album['ALBUM_NAME'])}")
+        self.album_path = self.settings['path'] + self._template()
+        
+        try:
+            if not os.path.isdir(self.album_path):
+                logger.debug(f"Creating: {self.album_path}")
+                os.makedirs(self.album_path)
+        except OSError as exc:
+            if exc.errno == 36: # Exceeded path limit
+                self.album_path = os.path.join(self.settings['path'], "EDIT ME")
+                if not os.path.isdir(self.album_path): # Retry
+                    logger.debug(f"Creating: {self.album_path}")
+                    os.makedirs(self.album_path)
+                    
         # Create disc directories
         self.disc_total = int(self.meta['DATA1']['DATA'][len(self.meta['DATA1']['DATA']) - 1]['ALBUM_CD_NO'])
         if  self.disc_total > 1:
@@ -59,9 +78,9 @@ class Download:
                 if not os.path.isdir(d):
                     os.makedirs(d)
                     
-        cover_url = unquote(self.meta['DATA0']['DATA'][0]['ALBUM_IMG_PATH_600'])
+        cover_url = unquote(self.album['ALBUM_IMG_PATH_600'])
         if cover_url == "":
-            cover_url = unquote(self.meta['DATA0']['DATA'][0]['ALBUM_IMG_PATH'])
+            cover_url = unquote(self.album['ALBUM_IMG_PATH'])
         self._download_cover(cover_url)
 
         # Initialize empty lists
@@ -150,17 +169,17 @@ class Download:
                     audio.add(id3.APIC(3, 'image/jpg', 3, '', cov_obj.read()))
             # Append necessary tags
             audio['TIT2'] = id3.TIT2(text=track_title)
-            audio['TALB'] = id3.TALB(text=unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME']))
-            audio['TCON'] = id3.TCON(text=unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME']))
+            audio['TALB'] = id3.TALB(text=unquote(self.album['ALBUM_NAME']))
+            audio['TCON'] = id3.TCON(text=unquote(self.album['ALBUM_NAME']))
             audio['TRCK'] = id3.TRCK(text=str(track_number) + "/" + str(len(self.meta['DATA1']['DATA'])))
             audio['TPOS'] = id3.TPOS(text=str(disc_number) + "/" + str(self.disc_total))
-            audio['TDRC'] = id3.TDRC(text=self.meta['DATA0']['DATA'][0]['ALBUM_RELEASE_DT'])
-            audio['TPUB'] = id3.TPUB(text=unquote(self.meta['DATA0']['DATA'][0]['ALBUM_PLANNER']))
+            audio['TDRC'] = id3.TDRC(text=self.album['ALBUM_RELEASE_DT'])
+            audio['TPUB'] = id3.TPUB(text=unquote(self.album['ALBUM_PLANNER']))
             audio['TPE1'] = id3.TPE1(text=unquote(track_artist))
-            audio['TPE2'] = id3.TPE2(text=unquote(self.meta['DATA0']['DATA'][0]['ARTIST_NAME']))
+            audio['TPE2'] = id3.TPE2(text=unquote(self.album['ARTIST_NAME']))
             audio['TCON'] = id3.TCON(text="")
             audio.setall("COMM", [id3.COMM(text=[u"지니뮤직"], encoding=id3.Encoding.UTF8)])
-            if lyrics != None and self.settings['timed_lyrics'] == 'Y':
+            if lyrics != None and self.settings['timed_lyrics']:
                     lyrics = [(v, int(k)) for k, v in lyrics.items()]
                     audio.setall("SYLT", [id3.SYLT(encoding=id3.Encoding.UTF8, lang='eng', format=2, type=1, text=lyrics)])
             logger.debug(f"Writing tags to: {path}")
@@ -182,14 +201,14 @@ class Download:
             audio['TRACKTOTAL'] = str(len(self.meta['DATA1']['DATA']))
             audio['DISCNUMBER'] = str(disc_number)
             audio['DISCTOTAL'] = str(self.disc_total)
-            audio['DATE'] = self.meta['DATA0']['DATA'][0]['ALBUM_RELEASE_DT']
-            audio['LABEL'] = self.meta['DATA0']['DATA'][0]['ALBUM_PLANNER']
+            audio['DATE'] = self.album['ALBUM_RELEASE_DT']
+            audio['LABEL'] = self.album['ALBUM_PLANNER']
             audio['ARTIST'] = unquote(track_artist)
-            audio['ALBUMARTIST'] = unquote(self.meta['DATA0']['DATA'][0]['ARTIST_NAME'])
-            audio['ALBUM'] = unquote(self.meta['DATA0']['DATA'][0]['ALBUM_NAME'])
+            audio['ALBUMARTIST'] = unquote(self.album['ARTIST_NAME'])
+            audio['ALBUM'] = unquote(self.album['ALBUM_NAME'])
             audio['TITLE'] = track_title
             audio['COMMENT'] = "지니뮤직"
-            if lyrics != None and self.settings['timed_lyrics'] == 'Y':
+            if lyrics != None and self.settings['timed_lyrics']:
                 audio['LYRICS'] = format_genie_lyrics(lyrics)
             logger.debug(f"Writing tags to: {path}")
             audio.save()  # Write file

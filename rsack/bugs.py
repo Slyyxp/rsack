@@ -21,7 +21,7 @@ class Download:
         """
         self.settings = Settings().Bugs()
         self.client = bugs.Client()
-        self.conn_info = self.client.auth(username=self.settings['username'], password=self.settings['password'])
+        self.conn_info = self.client.auth(email=self.settings['email'], password=self.settings['password'])
         logger.info(f"Threads: {self.settings['threads']}")
         if type == "artist":
             self._artist(id)
@@ -43,7 +43,7 @@ class Download:
         for album in artist['list'][1]['artist_album']['list']:
             contribution = contribution_check(id, int(album['artist_id']))
             if contribution:
-                if self.settings['contributions'] == 'Y':
+                if self.settings['contributions']:
                     self._album(album['album_id'])
                 else:
                     logger.debug("Skipping album contribution")
@@ -69,16 +69,30 @@ class Download:
             executor.map(self._download, self.album['tracks'])
     
     @logger.catch
+    def _template(self):
+        keys = {
+            "artist": self.album['artist_disp_nm'],
+            "title": self.album['title'],
+            "local_title": self.album['title_local'],
+            "date": _format_date(self.album['release_ymd']),
+            "local_date": _format_date(self.album['release_local_ymd']),
+            "album_id": str(self.album['album_id']),
+            "artist_id": str(self.album['artist_id']),
+            "type": self.album['album_tp'],
+            "agency_name": self.album['agency_nm'],
+            "agency_id": str(self.album['agency_id']),
+            "label_name": self.album['labels'][0]['label_nm'],
+            "label_id": str(self.album['labels'][0]['label_id'])
+        }
+        template = self.settings['template']
+        for k in keys:
+            template = template.replace(f"{{{k}}}", sanitize(keys[k]))
+        return template
+            
+    @logger.catch
     def _album_path(self):
         """Creates necessary directories"""
-        if self.settings['artist_folders'].upper() == 'Y':
-            self.album_path = os.path.join(
-                self.settings['path'], sanitize(self.album['artist_disp_nm']), f"{sanitize(self.album['artist_disp_nm'])} - {sanitize(self.album['title'])}")
-        else:
-            self.album_path = os.path.join(
-                self.settings['path'], f"{sanitize(self.album['artist_disp_nm'])} - {sanitize(self.album['title'])}")
-        if self.settings['append_date'] == 'Y':
-            self.album_path = self.album_path + f" [{_format_date(self.album['release_ymd'])}]"
+        self.album_path = self.settings['path'] + self._template()
         try:
             if not os.path.exists(self.album_path):
                 logger.debug(f"Creating {self.album_path}")
@@ -87,19 +101,10 @@ class Download:
             if exc.errno == 36: # Exceeded path limit
                 if len(self.album['artist_disp_nm']) > len(self.album['title']): #  Check whether artist name or album name is the issue
                     self.album['artist_disp_nm'] = "Various Artists" # Change to V.A. as Bugs has likely compiled a huge list of artists
-                    logger.debug("Artist name forcibly changed to Various Artists.")
+                    logger.debug("Artist name forcibly changed to try and reduce length")
                 else: # If title is the issue
-                    logger.debug("Album title forcibly changed as it exceeded the allowed Path length.")
-                    self.album['title'] = "EDIT ME"
-        
-                # Reassign album path
-                if self.settings['artist_folders'].upper() == 'Y':
-                    self.album_path = os.path.join(
-                        self.settings['path'], sanitize(self.album['artist_disp_nm']), f"{sanitize(self.album['artist_disp_nm'])} - {sanitize(self.album['title'])}")
-                else:
-                    self.album_path = os.path.join(
-                        self.settings['path'], f"{sanitize(self.album['artist_disp_nm'])} - {sanitize(self.album['title'])}")
-
+                    logger.debug("Album title forcibly changed to try and reduce length")
+                    self.album_path = self.settings['path'] + "EDIT ME"
                 # Retry
                 if not os.path.exists(self.album_path):
                     logger.debug(f"Creating {self.album_path}")
@@ -285,7 +290,7 @@ class Download:
             str: Formatted lyrics
         """
         # If user prefers timed then retrieve timed lyrics
-        if lyrics_tp == 'T' and self.settings['lyrics'] == 'T':
+        if lyrics_tp and self.settings['timed_lyrics']:
             # Retrieve timed lyrics
             r = requests.get(f"https://music.bugs.co.kr/player/lyrics/T/{track_id}")
             # Format timed lyrics
@@ -294,7 +299,7 @@ class Download:
             lyrics = ("\n".join(
                 f'[{datetime.fromtimestamp(round(float(a), 2)).strftime("%M:%S.%f")[0:-4]}]{b}' for a, b in line_split))
         # If user prefers untimed or timed unavailable then use untimed
-        elif lyrics_tp == 'N' or self.settings['lyrics'] == 'N':
+        elif not lyrics_tp or not self.settings['timed_lyrics']:
             r = requests.get(f'https://music.bugs.co.kr/player/lyrics/N/{track_id}')
             lyrics = r.json()['lyrics']
             # If unavailable leave as empty string

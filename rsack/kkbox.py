@@ -10,10 +10,10 @@ from rsack.utils import Settings, sanitize
 class Download():
     def __init__(self, url):
         self.client = KkboxAPI()
-        self.config = Settings().KKBox()
+        self.settings = Settings().KKBox()
         self.id = url.split("/")[-1]
-        self.client.login(email=self.config['email'],
-                            password=self.config['password'],
+        self.client.login(email=self.settings['email'],
+                            password=self.settings['password'],
                             region_bypass=True)
         if url.split("/")[-2] == "artist":
             artist = self.client.get_artist(self.id)
@@ -47,10 +47,32 @@ class Download():
         url = url.replace('{format}', file_type)
         return url
     
+    @logger.catch
+    def _template(self):
+        keys = {
+            "artist": self.meta['album']['artist_name'],
+            "title": self.meta['album']['album_name'],
+            "date": self.meta['release_date'],
+            "album_id": str(self.meta['album']['album_id']),
+            "encrypted_album_id": self.meta['album']['encrypted_album_id'],
+            "artist_id": str(self.meta['album']['artist_id']),
+            "encrypted_artist_id": self.meta['album']['encrypted_artist_id']
+        }
+        template = self.settings['template']
+        for k in keys:
+            template = template.replace(f"{{{k}}}", sanitize(keys[k]))
+        return template
+    
     def _create_album_folder(self):
-        self.album_path = os.path.join(self.config['path'], sanitize(f"{self.meta['album']['artist_name']}"), sanitize(f"{self.meta['album']['artist_name']} - {self.meta['album']['album_name']} [KKBOX]"))
-        if not os.path.exists(self.album_path):
-            os.makedirs(self.album_path)
+        self.album_path = self.settings['path'] + self._template()
+        try:
+            if not os.path.exists(self.album_path):
+                os.makedirs(self.album_path)
+        except OSError as exc:
+            if exc.errno == 36: # Exceeded path limit
+                self.album_path = os.path.join(self.settings['path'], 'EDIT ME')
+                if not os.path.exists(self.album_path): # Retry
+                    os.makedirs(self.album_path)
     
     def _download_cover(self):
         url = self.get_img_url(self.meta['album']['album_photo_info']['url_template'], 3000)
@@ -70,12 +92,12 @@ class Download():
     @logger.catch
     def _download_album(self, id):
         self.meta = self.client.get_album(id=id)
+        self.meta['release_date'] = self.client.get_date(id)
         song_list = self.client.get_album_more(self.meta['album']['album_id'])
         self._create_album_folder()
-        self.meta['release_date'] = self.client.get_date(id)
         self._download_cover()
         self.meta['album']['track_total'] = song_list['song_list']['song'][-1]['trankno'] # Assign track total because the existing 'collected_count' is not accurate.
-        with ThreadPoolExecutor(max_workers=int(self.config['threads'])) as executor:
+        with ThreadPoolExecutor(max_workers=int(self.settings['threads'])) as executor:
             executor.map(self._download_track, song_list['song_list']['song'])
         logger.debug(f"Deleting {self.cover_path_embed}")
         os.remove(self.cover_path_embed)
