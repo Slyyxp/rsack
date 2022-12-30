@@ -6,7 +6,7 @@ path = C:\Music\Korean
 timed_lyrics = true
 contributions = false
 cover_size = original
-template = /{artist}/{artist} - {title}
+template = \{artist}\{artist} - {title}
 
 [Genie]
 username = username
