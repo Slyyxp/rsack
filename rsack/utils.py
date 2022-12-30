@@ -39,7 +39,6 @@ class Settings:
                            'password': "mypassword",
                            'threads': "2",
                            'path': "C:\Music\Korean",
-                           'artist_folders': "Y",
                            'timed_lyrics': "Y",
                            'contributions': "N",
                            "template": "/{artist}/{artist} - {title}"}
