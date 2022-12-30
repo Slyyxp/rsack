@@ -26,7 +26,7 @@ class Settings:
         """
         # Write file
         config = ConfigParser()
-        config['Bugs'] = {'username': "email@protonmail.com",
+        config['Bugs'] = {'email': "email@protonmail.com",
                           'password': "mypassword",
                           'threads': "2",
                           'path': "C:\Music\Korean",
@@ -35,7 +35,7 @@ class Settings:
                           "cover_size": "original",
                           "template": "/{artist}/{artist} - {title}"}
         
-        config['Genie'] = {'username': "email@protonmail.com",
+        config['Genie'] = {'username': "username",
                            'password': "mypassword",
                            'threads': "2",
                            'path': "C:\Music\Korean",
