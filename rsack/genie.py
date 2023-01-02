@@ -202,7 +202,7 @@ class Download:
             audio['DISCNUMBER'] = str(disc_number)
             audio['DISCTOTAL'] = str(self.disc_total)
             audio['DATE'] = self.album['ALBUM_RELEASE_DT']
-            audio['LABEL'] = self.album['ALBUM_PLANNER']
+            audio['LABEL'] = unquote(self.album['ALBUM_PLANNER'])
             audio['ARTIST'] = unquote(track_artist)
             audio['ALBUMARTIST'] = unquote(self.album['ARTIST_NAME'])
             audio['ALBUM'] = unquote(self.album['ALBUM_NAME'])
