@@ -70,7 +70,6 @@ class Download:
     
     @logger.catch
     def _template(self):
-        print(self.album)
         keys = {
             "artist": self.album['artist_disp_nm'],
             "title": self.album['title'],
