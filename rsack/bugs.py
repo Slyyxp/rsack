@@ -70,6 +70,7 @@ class Download:
     
     @logger.catch
     def _template(self):
+        print(self.album)
         keys = {
             "artist": self.album['artist_disp_nm'],
             "title": self.album['title'],
@@ -79,10 +80,6 @@ class Download:
             "album_id": str(self.album['album_id']),
             "artist_id": str(self.album['artist_id']),
             "type": self.album['album_tp'],
-            "agency_name": self.album['agency_nm'],
-            "agency_id": str(self.album['agency_id']),
-            "label_name": self.album['labels'][0]['label_nm'],
-            "label_id": str(self.album['labels'][0]['label_id'])
         }
         template = self.settings['template']
         for k in keys:
