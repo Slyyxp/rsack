@@ -33,6 +33,17 @@ class KkboxAPI:
             'of': 'j',
             'oenc': 'kc1',
         }
+        
+        retry_strategy = requests.packages.urllib3.util.retry.Retry(
+            total=5,
+            backoff_factor=5,
+            status_forcelist=[429, 500, 502, 503, 504],
+            method_whitelist=["HEAD", "GET", "OPTIONS"]
+        )
+        
+        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
+        self.s.mount('https://', adapter)
+        self.s.mount('http://', adapter)
 
     def kc1_decrypt(self, data):
         cipher = ARC4.new(self.kc1_key)
