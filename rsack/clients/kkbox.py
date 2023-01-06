@@ -1,3 +1,4 @@
+import os
 import json
 import requests
 from loguru import logger
@@ -219,15 +220,46 @@ class KkboxAPI:
             logger.critical("Couldn't auth device")
 
     def kkdrm_dl(self, url, path):
-        # skip first 1024 bytes of track file
-        resp = self.s.get(url, stream=True, headers={'range': 'bytes=1024-'})
-        resp.raise_for_status()
+        while True:
+            try:
+                headers = {
+                    "Range": 'bytes=%d-' % bytes + 1024,
+                }
+            except:
+                headers={'range': 'bytes=1024-'}  # skip first 1024 bytes of track file
 
-        size = int(resp.headers['content-length'])
+            resp = self.s.get(url, stream=True, headers=headers)
+            resp.raise_for_status()
 
-        # drop 512 bytes of keystream
-        rc4 = ARC4.new(self.lic_content_key, drop=512)
+            size = int(resp.headers['content-length'])
 
-        with open(path, 'wb') as f:
-            for chunk in resp.iter_content(chunk_size=4096):
-                f.write(rc4.decrypt(chunk))
+            # drop 512 bytes of keystream
+            rc4 = ARC4.new(self.lic_content_key, drop=512)
+            
+            with open(path, 'wb') as f:
+                for chunk in resp.iter_content(chunk_size=4096):
+                    f.write(rc4.decrypt(chunk))
+            
+            bytes = self._return_bytes(path)
+            if  bytes < size:
+                logger.warning(f" Missing {bytes - size} bytes. Continuing download.")
+                continue
+            else:
+                break
+            
+
+    @staticmethod
+    def _return_bytes(file_path: str) -> int:
+        """Returns number of bytes in file
+
+        Args:
+            file_path (str): File path
+
+        Returns:
+            int: Returns size in bytes
+        """
+        
+        if os.path.exists(file_path):
+            return os.path.getsize(file_path)
+        else:
+            return 0
