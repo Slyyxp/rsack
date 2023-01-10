@@ -17,7 +17,9 @@ class Download():
                             region_bypass=True)
         if url.split("/")[-2] == "artist":
             artist = self.client.get_artist(self.id)
-            for album in artist['album']:
+            artist_raw_id = artist["profile"]["artist_id"]
+            artist_albums = self.client.get_artist_albums(artist_raw_id,20,0)
+            for album in artist_albums:
                 self._download_album(album['encrypted_album_id'])
         else:
             self._download_album(self.id)
@@ -93,6 +95,7 @@ class Download():
     def _download_album(self, id):
         self.meta = self.client.get_album(id=id)
         self.meta['release_date'] = self.client.get_date(id)
+        logger.info("Album Name: " + self.meta['album']['album_name'])
         song_list = self.client.get_album_more(self.meta['album']['album_id'])
         self._create_album_folder()
         self._download_cover()
