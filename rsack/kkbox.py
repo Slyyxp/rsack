@@ -13,8 +13,7 @@ class Download():
         self.settings = Settings().KKBox()
         self.id = url.split("/")[-1]
         self.client.login(email=self.settings['email'],
-                            password=self.settings['password'],
-                            region_bypass=True)
+                            password=self.settings['password'])
         if url.split("/")[-2] == "artist":
             artist = self.client.get_artist(self.id)
             artist_raw_id = artist["profile"]["artist_id"]
