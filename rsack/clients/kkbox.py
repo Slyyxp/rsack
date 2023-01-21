@@ -38,7 +38,7 @@ class KkboxAPI:
         retry_strategy = requests.packages.urllib3.util.retry.Retry(
             total=5,
             backoff_factor=5,
-            status_forcelist=[429, 500, 502, 503, 504],
+            status_forcelist=[404, 429, 500, 502, 503, 504],
             method_whitelist=["HEAD", "GET", "OPTIONS"]
         )
         
@@ -52,7 +52,7 @@ class KkboxAPI:
 
     def get_date(self, id):
         logger.debug("Scraping release date")
-        r = self.s.get(f"https://www.kkbox.com/hk/tc/album/{id}")
+        r = self.s.get(f"https://www.kkbox.com/{self.lang}/en/album/{id}")
         soup = BeautifulSoup(r.content, 'html.parser')
         return soup.find('div', attrs={'class': "date"}).text.replace("/", ".")
         
@@ -97,8 +97,8 @@ class KkboxAPI:
 
         self.region_bypass = region_bypass
 
+        self.lang = resp['accept_lang']
         self.apply_session(resp)
-        logger.info("Logged in")
 
     def renew_session(self):
         host = 'login' if not self.region_bypass else 'login-utapass'
