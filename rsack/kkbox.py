@@ -18,6 +18,9 @@ class Download():
         if url.split("/")[-2] == "artist":
             artist = self.client.get_artist(self.id)
             for album in artist['album']:
+                artist_raw_id = artist["profile"]["artist_id"]
+                artist_albums = self.client.get_artist_albums(artist_raw_id,20,0)
+            for album in artist_albums:
                 self._download_album(album['encrypted_album_id'])
         else:
             self._download_album(self.id)
