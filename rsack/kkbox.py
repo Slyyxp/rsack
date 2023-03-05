@@ -14,7 +14,7 @@ class Download():
         self.id = url.split("/")[-1]
         self.client.login(email=self.settings['email'],
                             password=self.settings['password'],
-                            region_bypass=True)
+                            region_bypass=False)
         if url.split("/")[-2] == "artist":
             artist = self.client.get_artist(self.id)
             for album in artist['album']:
