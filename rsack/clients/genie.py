@@ -5,7 +5,7 @@ from loguru import logger
 from rsack.exceptions import DeviceIDError
 
 class Client:
-    def __init__(self):
+    def __init__(self, proxy=None):
         self.session = requests.Session()
         self.dev_id = "eb9d53a3c424f961"
 
@@ -15,6 +15,23 @@ class Client:
         })
 
         self.session.mount('https://', requests.adapters.HTTPAdapter(max_retries=3))
+        
+        retry_strategy = requests.packages.urllib3.util.retry.Retry(
+            total=5,
+            backoff_factor=5,
+            status_forcelist=[404, 429, 500, 502, 503, 504],
+            method_whitelist=["HEAD", "GET", "OPTIONS"]
+        )
+        
+        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount('https://', adapter)
+        self.session.mount('http://', adapter)
+        
+        # Assign proxy if applicable
+        if proxy:
+            logger.debug(f"{proxy.split('@')[1]}")
+            proxies = {"https": proxy}
+            self.session.proxies.update(proxies)
         
     def make_call(self, sub: str, epoint: str, data: dict) -> dict:
         """Makes API call to specified endpoint

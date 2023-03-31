@@ -14,7 +14,7 @@ class Download:
     def __init__(self, type: str, id: int):
         """Initialize and control the flow of the download"""
         self.settings = Settings().Genie()
-        self.client = genie.Client()
+        self.client = genie.Client(proxy=self.settings['proxy'])
         self.client.auth(username=self.settings['username'], password=self.settings['password'])
         logger.info(f"Threads: {self.settings['threads']}")
         if type == "artist":

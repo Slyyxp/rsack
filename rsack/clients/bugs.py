@@ -5,13 +5,30 @@ from loguru import logger
 from rsack.exceptions import InvokeMapError
 
 class Client:
-    def __init__(self):
+    def __init__(self, proxy=None):
         self.session = requests.Session()
         self.api_key = "b2de0fbe3380408bace96a5d1a76f800"
         self.session.headers.update({
             "User-Agent": "Mobile|Bugs|4.11.30|Android|5.1.1|SM-G965N|samsung|market",
             "Host": "api.bugs.co.kr",
         })
+        
+        retry_strategy = requests.packages.urllib3.util.retry.Retry(
+            total=5,
+            backoff_factor=5,
+            status_forcelist=[404, 429, 500, 502, 503, 504],
+            method_whitelist=["HEAD", "GET", "OPTIONS"]
+        )
+        
+        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount('https://', adapter)
+        self.session.mount('http://', adapter)
+        
+        # Assign proxy if applicable
+        if proxy:
+            logger.debug(f"{proxy.split('@')[1]}")
+            proxies = {"https": proxy}
+            self.session.proxies.update(proxies)
  
     def auth(self, email: str, password: str):
         """Authenticates session"""

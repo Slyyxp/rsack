@@ -12,10 +12,10 @@ class KkboxAPI:
     """KKBox Client
     Source: https://github.com/uhwot/orpheusdl-kkbox/blob/1e217c41af599a8ff9a821d8e3ac13535a03c6de/kkapi.py
     """
-    def __init__(self, kc1_key="7f1a68f00b747f4ac1469c72e7ef492c", kkid=None):
+    def __init__(self, kc1_key="7f1a68f00b747f4ac1469c72e7ef492c", kkid=None, proxy=None):
         self.kc1_key = kc1_key.encode('ascii')
         self.s = requests.Session()
-        self.s.headers.update({
+        self.session.headers.update({
             'user-agent': 'okhttp/3.14.9'
         })
 
@@ -43,18 +43,18 @@ class KkboxAPI:
         )
         
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
-        self.s.mount('https://', adapter)
-        self.s.mount('http://', adapter)
+        self.session.mount('https://', adapter)
+        self.session.mount('http://', adapter)
 
+         # Assign proxy if applicable
+        if proxy:
+            logger.debug(f"{proxy.split('@')[1]}")
+            proxies = {"https": proxy}
+            self.session.proxies.update(proxies)
+        
     def kc1_decrypt(self, data):
         cipher = ARC4.new(self.kc1_key)
         return cipher.decrypt(data).decode('utf-8')
-
-    def get_date(self, id):
-        logger.debug("Scraping release date")
-        r = self.s.get(f"https://www.kkbox.com/{self.lang}/en/album/{id}")
-        soup = BeautifulSoup(r.content, 'html.parser')
-        return soup.find('div', attrs={'class': "date"}).text.replace("/", ".")
         
     def api_call(self, host, path, params={}, payload=None):
         if host == 'ticket':
@@ -65,9 +65,9 @@ class KkboxAPI:
 
         url = f'https://api-{host}.kkbox.com.tw/{path}'
         if not payload:
-            r = self.s.get(url, params=params)
+            r = self.session.get(url, params=params)
         else:
-            r = self.s.post(url, params=params, data=payload)
+            r = self.session.post(url, params=params, data=payload)
 
         resp = json.loads(self.kc1_decrypt(r.content)) if r.content else None
         return resp
@@ -228,7 +228,7 @@ class KkboxAPI:
             except:
                 headers={'range': 'bytes=1024-'}  # skip first 1024 bytes of track file
 
-            resp = self.s.get(url, stream=True, headers=headers)
+            resp = self.session.get(url, stream=True, headers=headers)
             resp.raise_for_status()
 
             size = int(resp.headers['content-length'])

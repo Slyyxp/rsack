@@ -20,7 +20,7 @@ class Download:
             id (int): Unique ID.
         """
         self.settings = Settings().Bugs()
-        self.client = bugs.Client()
+        self.client = bugs.Client(proxy=self.settings['proxy'])
         self.conn_info = self.client.auth(email=self.settings['email'], password=self.settings['password'])
         logger.info(f"Threads: {self.settings['threads']}")
         if type == "artist":
