@@ -14,7 +14,7 @@ class KkboxAPI:
     """
     def __init__(self, kc1_key="7f1a68f00b747f4ac1469c72e7ef492c", kkid=None, proxy=None):
         self.kc1_key = kc1_key.encode('ascii')
-        self.s = requests.Session()
+        self.session = requests.Session()
         self.session.headers.update({
             'user-agent': 'okhttp/3.14.9'
         })
