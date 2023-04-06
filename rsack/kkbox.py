@@ -79,14 +79,14 @@ class Download():
     def _download_cover(self):
         url = self.get_img_url(self.meta['album']['album_photo_info']['url_template'], 3000)
         logger.info("Downloading original artwork")
-        r = self.client.s.get(url)
+        r = self.client.session.get(url)
         self.cover_path = os.path.join(self.album_path, 'cover.jpg')
         with open(self.cover_path, 'wb') as f:
             f.write(r.content)
             
         logger.info("Downloading artwork to embed")
         url = self.get_img_url(self.meta['album']['album_photo_info']['url_template'], 600)
-        r = self.client.s.get(url)
+        r = self.client.session.get(url)
         self.cover_path_embed = os.path.join(self.album_path, 'embed.jpg')
         with open(self.cover_path_embed, 'wb') as f:
             f.write(r.content)
